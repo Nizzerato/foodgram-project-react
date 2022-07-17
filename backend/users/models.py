@@ -8,26 +8,35 @@ def get_deleted_user():
 
 
 class User(AbstractUser):
-    email = models.EmailField(max_length=254, blank=False, unique=True)
-    shopping_list = models.ManyToManyField(
-        'recipes.Recipe',
-        related_name='in_shopping_list',
-        blank=True,
+    username = models.CharField(
+        db_index=True,
+        max_length=150,
+        unique=True
     )
-    favourites = models.ManyToManyField(
-        'recipes.Recipe',
-        related_name='in_favourites',
-        blank=True,
+    email = models.EmailField(
+        max_length=254,
+        blank=False,
+        unique=True
     )
-    follows = models.ManyToManyField(
-        'self',
-        symmetrical=False,
-        blank=True,
+    first_name = models.CharField(
+        max_length=150,
+        verbose_name='Name'
+    )
+    last_name = models.CharField(
+        max_length=150,
+        verbose_name='Last Name'
+    )
+    is_subscribed = models.BooleanField(
+        default=False,
+        verbose_name='Subscription'
     )
 
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
+
+    def __str__(self):
+        return self.username
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (

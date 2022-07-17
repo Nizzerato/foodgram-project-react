@@ -1,14 +1,17 @@
 from django.db.models import Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django_filters import rest_framework
 from rest_framework import generics, permissions, status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from recipes.models import Ingredient, Recipe, Tag
+from recipes.models import (
+    Ingredient, Recipe, Tag,
+    Subscribe, Favourites, ShoppingList
+)
 from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
@@ -44,49 +47,27 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 
-@api_view(['GET', 'DELETE'])
-@permission_classes([IsAuthenticated])
-def subscribe(request, uid):
-    author = get_object_or_404(User, id=uid)
-    user = request.user
-    serializer = UserSubscriptionSerializer(
-        author,
-        context={
-            'user': user,
-            'request': request,
-        },
-    )
-    following = user.follows.filter(id=author.id).exists()
-    if request.method == 'GET':
-        if not following:
-            user.following.add(author)
-            return Response(
-                serializer.data, status=status.HTTP_201_CREATED
-            )
-        return Response(
-            ALREADY_SUBSCRIBED_ERROR, status=status.HTTP_400_BAD_REQUEST
-        )
-    if request.method == 'DELETE':
-        if following:
-            user.following.remove(author)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            NO_SUBSCRIPTION_ERROR, status=status.HTTP_400_BAD_REQUEST
-        )
-
-
-class FollowingListViewSet(generics.ListAPIView):
-    queryset = User.objects.all()
-    permission_classes = [IsAuthenticated,]
+class SubscribeViewSet(viewsets.ModelViewSet):
     serializer_class = UserSubscriptionSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request, 'user': self.request.user})
-        return context
+    permission_classes = [IsAuthenticated,]
 
     def get_queryset(self):
-        return self.request.user.following.prefetch_related()
+        return get_list_or_404(User, following__user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('users_id')
+        user = get_object_or_404(User, id=user_id)
+        Subscribe.objects.create(
+            user=request.user, following=user)
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        author_id = self.kwargs['users_id']
+        user_id = request.user.id
+        subscribe = get_object_or_404(
+            Subscribe, user__id=user_id, following__id=author_id)
+        subscribe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -100,12 +81,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Recipe.objects.prefetch_related().annotate(
             in_favourites=(
-                Exists(user.favourite.filter(id=OuterRef('id')))
+                Exists(Favourites.objects.filter(id=OuterRef('id')))
                 if user.is_authenticated
                 else Value(False)
             ),
             in_shopping_list=(
-                Exists(user.shopping_list.filter(id=OuterRef('id')))
+                Exists(ShoppingList.objects.filter(id=OuterRef('id')))
                 if user.is_authenticated
                 else Value(False)
             ),
@@ -126,13 +107,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer_class=RecipeShortSerializer,
     )
     def favourites(self, request, recipe_id):
-        user = request.user
         recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
         serializer = self.get_serializer(recipe)
-        recipe_in_favourites = user.favourites.filter(id=recipe_id).exists()
+        recipe_in_favourites = Favourites.objects.filter(id=recipe_id).exists()
         if request.method == 'GET':
             if not recipe_in_favourites:
-                user.favourites.add(recipe)
+                Favourites.objects.add(recipe)
                 return Response(
                     serializer.data, status==status.HTTP_201_CREATED
                 )
@@ -142,7 +122,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         if request.method == 'DELETE':
             if recipe_in_favourites:
-                user.favourites.remove(recipe)
+                Favourites.objects.remove(recipe)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(
                 RECIPE_NOT_IN_FAVOURITES_ERROR,
@@ -156,13 +136,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer_class=RecipeShortSerializer,
     )
     def shopping_list(self, request, recipe_id):
-        user = request.user
         recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
         serializer = self.get_serializer(recipe)
-        recipe_in_list = user.shopping_list.filter(id=recipe_id).exists()
+        recipe_in_list = ShoppingList.objects.filter(id=recipe_id).exists()
         if request.method == 'GET':
             if not recipe_in_list:
-                user.shopping.list.add(recipe)
+                ShoppingList.objects.add(recipe)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED
                 )
@@ -172,7 +151,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         if request.method == 'DELETE':
             if recipe_in_list:
-                user.shopping_list.remove(recipe)
+                ShoppingList.objects.remove(recipe)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(
                 RECIPE_NOT_IN_LIST_ERROR,
@@ -183,10 +162,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class DownloadShoppingList(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request):
+    def get(self):
         shopping_list = {}
-        user = request.user
-        ingredients = user.shopping_list.values(
+        ingredients = ShoppingList.objects.values(
             'ingredient_entries__ingredient__name',
             'ingredient_entries__ingredient__measure_unit__name'
         ).annotate(total=Sum('ingredient_entries__amount'))

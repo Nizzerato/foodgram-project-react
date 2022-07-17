@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from recipes.models import (
-    Ingredient, Recipe, RecipeIngredientEntry, Tag
+    Ingredient, Recipe, RecipeIngredientEntry,
+    Tag, Subscribe, ShoppingList, Favourites
 )
 from users.models import User
 
@@ -43,13 +44,15 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'is_subscribed'
         )
 
-        def get_is_subscribed(self, obj):
-            user = self.context.get('request').user
-            return (
-                user.follows.filter(id=obj.id).exists()
-                if not user.is_anonymous
-                else False
-            )
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        return (
+            Subscribe.objects.filter(
+                user=user, id=obj.id
+            ).exists()
+            if not user.is_anonymous
+            else False
+        )
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -90,8 +93,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientEntrySerializer(
         source='ingredient_entries', many=True
     )
-    in_favourites = serializers.BooleanField()
-    in_shopping_list = serializers.BooleanField()
+    in_favourites = serializers.SerializerMethodField()
+    in_shopping_list = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -112,6 +115,26 @@ class RecipeSerializer(serializers.ModelSerializer):
             'author',
             'in_favourites',
             'in_shopping_list',
+        )
+
+    def get_is_in_favourites(self, obj):
+        user = self.context.get('request').user
+        return (
+            Favourites.objects.filter(
+                user=user, id=obj.id
+            ).exists()
+            if not user.is_anonymous
+            else False
+        )
+
+    def get_is_in_shopping_list(self, obj):
+        user = self.context.get('request').user
+        return (
+            ShoppingList.objects.filter(
+                user=user, id=obj.id
+            ).exists()
+            if not user.is_anonymous
+            else False
         )
 
 
@@ -228,14 +251,6 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
             'last_name',
             'is_subscribed',
             'recipes',
-        )
-
-    def get_is_subscribed(self, obj):
-        user = self.context.get('user')
-        return (
-            user.follows.filter(id=obj.id).exists()
-            if not user.is_anonymous
-            else False
         )
 
     def get_recipes(self, obj):
