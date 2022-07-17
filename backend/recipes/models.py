@@ -1,7 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
-from users.models import get_deleted_user, User
+from users.models import User, get_deleted_user
 
 
 class Tag(models.Model):
@@ -84,7 +83,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Recipes'
 
     def __str__(self):
-        return  self.name
+        return self.name
 
     @property
     def favourites_entries(self):

@@ -1,27 +1,22 @@
 from django.db.models import Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from django_filters import rest_framework
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from recipes.models import (
-    Ingredient, Recipe, Tag,
-    Subscribe, Favourites, ShoppingList
-)
+from recipes.models import (Favourites, Ingredient, Recipe, ShoppingList,
+                            Subscribe, Tag)
 from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
-from .permissions import IsStaffOrReadOnly, IsStaffOrOwnerOrReadOnly
-from .serializers import (
-    IngredientSerializer, RecipeCreateSerializer,
-    RecipeSerializer, RecipeShortSerializer,
-    TagSerializer, UserSubscriptionSerializer
-)
-
+from .permissions import IsStaffOrOwnerOrReadOnly, IsStaffOrReadOnly
+from .serializers import (IngredientSerializer, RecipeCreateSerializer,
+                          RecipeSerializer, RecipeShortSerializer,
+                          TagSerializer, UserSubscriptionSerializer)
 
 ALREADY_SUBSCRIBED_ERROR = 'You are already subscribed to this author.'
 NO_SUBSCRIPTION_ERROR = 'You are not subscribed to this author.'
@@ -33,14 +28,14 @@ RECIPE_NOT_IN_LIST_ERROR = 'This recipe is not in shopping list.'
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    permission_classes = [IsStaffOrReadOnly,]
+    permission_classes = [IsStaffOrReadOnly, ]
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.select_related()
-    permission_classes = [IsStaffOrReadOnly,]
+    permission_classes = [IsStaffOrReadOnly, ]
     serializer_class = IngredientSerializer
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = IngredientFilter
@@ -49,7 +44,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SubscribeViewSet(viewsets.ModelViewSet):
     serializer_class = UserSubscriptionSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
         return get_list_or_404(User, following__user=self.request.user)
@@ -72,7 +67,7 @@ class SubscribeViewSet(viewsets.ModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.prefetch_related()
-    permission_classes = [IsStaffOrOwnerOrReadOnly,]
+    permission_classes = [IsStaffOrOwnerOrReadOnly, ]
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ('get', 'post', 'delete', 'put', 'patch')
@@ -114,7 +109,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if not recipe_in_favourites:
                 Favourites.objects.add(recipe)
                 return Response(
-                    serializer.data, status==status.HTTP_201_CREATED
+                    serializer.data, status=status.HTTP_201_CREATED
                 )
             return Response(
                 RECIPE_ALREADY_IN_FAVOURITES_ERROR,
@@ -124,10 +119,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if recipe_in_favourites:
                 Favourites.objects.remove(recipe)
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                RECIPE_NOT_IN_FAVOURITES_ERROR,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            RECIPE_NOT_IN_FAVOURITES_ERROR,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         methods=('GET', 'DELETE'),
@@ -153,10 +148,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if recipe_in_list:
                 ShoppingList.objects.remove(recipe)
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                RECIPE_NOT_IN_LIST_ERROR,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            RECIPE_NOT_IN_LIST_ERROR,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class DownloadShoppingList(APIView):

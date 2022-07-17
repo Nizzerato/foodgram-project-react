@@ -1,11 +1,9 @@
 from rest_framework import serializers
 
-from recipes.models import (
-    Ingredient, Recipe, RecipeIngredientEntry,
-    Tag, Subscribe, ShoppingList, Favourites
-)
+from recipes.models import (Favourites, Ingredient, Recipe,
+                            RecipeIngredientEntry, ShoppingList, Subscribe,
+                            Tag)
 from users.models import User
-
 
 EMPTY_INGREDIENTS_LIST_ERROR = (
     'The recipe should have at least one ingredient!'
@@ -156,7 +154,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             try:
                 amount = int(ingredient.get('amount'))
-            except:
+            except serializers.ValidationError:
                 raise serializers.ValidationError(AMOUNT_IS_NOT_INTEGER_ERROR)
             if amount <= 0:
                 raise serializers.ValidationError(
