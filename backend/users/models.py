@@ -8,6 +8,7 @@ def get_deleted_user():
 
 
 class User(AbstractUser):
+    email = models.EmailField(max_length=254, blank=False, unique=True)
     shopping_list = models.ManyToManyField(
         'recipes.Recipe',
         related_name='in_shopping_list',
@@ -30,5 +31,5 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
-        'login', 'password', 'first_name', 'last_name'
+        'username', 'password', 'first_name', 'last_name'
     )
