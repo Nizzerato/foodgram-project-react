@@ -10,8 +10,3 @@ const LinkComponent = ({ exact, href, title, className, activeClassName }) => {
 }
 
 export default LinkComponent
-
-
-// href
-// title
-// class
