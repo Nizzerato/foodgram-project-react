@@ -4,9 +4,15 @@ from users.models import User, get_deleted_user
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=30)
-    color = models.CharField(max_length=200)
-    slug = models.SlugField()
+    name = models.CharField(
+        max_length=30,
+        verbose_name='Tag Name'
+    )
+    color = models.CharField(
+        max_length=200,
+        verbose_name='Tag Color'
+    )
+    slug = models.SlugField(verbose_name='Tag Slug')
 
     class Meta:
         ordering = ('id',)
@@ -18,7 +24,10 @@ class Tag(models.Model):
 
 
 class MeasureUnit(models.Model):
-    name = models.CharField(max_length=10)
+    name = models.CharField(
+        max_length=10,
+        verbose_name='Measure Unit Name'
+    )
 
     class Meta:
         ordering = ('id',)
@@ -30,8 +39,15 @@ class MeasureUnit(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=100)
-    measure_unit = models.ForeignKey(MeasureUnit, on_delete=models.RESTRICT)
+    name = models.CharField(
+        max_length=100,
+        verbose_name='Ingredient Name'
+    )
+    measure_unit = models.ForeignKey(
+        MeasureUnit,
+        on_delete=models.RESTRICT,
+        verbose_name='Ingredient Measure Unit'
+    )
 
     class Meta:
         ordering = ('name',)
@@ -44,18 +60,29 @@ class Ingredient(models.Model):
 
 
 class RecipeIngredientEntry(models.Model):
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.RESTRICT)
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.RESTRICT,
+        verbose_name='Ingredient'
+    )
     recipe = models.ForeignKey(
         'recipes.Recipe',
         on_delete=models.CASCADE,
-        related_name='ingredient_entries'
+        related_name='ingredient_entries',
+        verbose_name='Recipe'
     )
-    amount = models.PositiveIntegerField()
+    amount = models.PositiveIntegerField(verbose_name='Ingredient Amount')
 
     class Meta:
         ordering = ('id',)
         verbose_name = 'Recipe Ingredient Entry'
         verbose_name_plural = 'Recipe Ingradient Entries'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ingredient', 'recipe'],
+                name='unique_recipeingrediententry'
+            )
+        ]
 
     def __str__(self):
         return self.ingredient.name
@@ -65,17 +92,31 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.SET(get_deleted_user),
-        related_name='recipes'
+        related_name='recipes',
+        verbose_name='Recipe Author'
     )
-    name = models.CharField(max_length=200)
-    image = models.ImageField()
-    text = models.TextField()
+    name = models.CharField(
+        max_length=200,
+        verbose_name='Recipe Name'
+    )
+    image = models.ImageField(verbose_name='Recipe Image')
+    text = models.TextField(verbose_name='Recipe Text')
     ingredients = models.ManyToManyField(
-        Ingredient, through='recipes.RecipeIngredientEntry'
+        Ingredient,
+        through='recipes.RecipeIngredientEntry',
+        verbose_name='Recipe Ingredients'
     )
-    tags = models.ManyToManyField(Tag)
-    cooking_time = models.PositiveSmallIntegerField()
-    created = models.DateTimeField(auto_now_add=True)
+    tags = models.ManyToManyField(
+        Tag,
+        verbose_name='Recipe Tags'
+    )
+    cooking_time = models.PositiveSmallIntegerField(
+        verbose_name='Recipe Cooking Time'
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Recipe Creation Date'
+    )
 
     class Meta:
         ordering = ('-created',)
@@ -90,7 +131,7 @@ class Recipe(models.Model):
         return self.in_favourites.count()
 
 
-class Favourites(models.Model):
+class Favourite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

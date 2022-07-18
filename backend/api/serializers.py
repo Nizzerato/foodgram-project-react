@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from recipes.models import (Favourites, Ingredient, Recipe,
+from recipes.models import (Favourite, Ingredient, Recipe,
                             RecipeIngredientEntry, ShoppingList, Subscribe,
                             Tag)
 from users.models import User
@@ -118,7 +118,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_favourites(self, obj):
         user = self.context.get('request').user
         return (
-            Favourites.objects.filter(
+            Favourite.objects.filter(
                 user=user, id=obj.id
             ).exists()
             if not user.is_anonymous
@@ -147,7 +147,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     )
 
     def validate(self, data):
-        ingredients = self.initial_data.get('ingradients')
+        ingredients = self.data.get('ingredients')
         ingredients_id = []
         if len(ingredients) == 0:
             raise serializers.ValidationError(EMPTY_INGREDIENTS_LIST_ERROR)
@@ -216,11 +216,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         self.add_ingredient(ingredients_data, instance)
         super().update(instance, validated_data)
         return instance
-
-    def get_recipe(self, instance):
-        return RecipeSerializer(
-            instance, context={'request': self.context.get('request')}
-        ).data
 
     class Meta:
         model = Recipe

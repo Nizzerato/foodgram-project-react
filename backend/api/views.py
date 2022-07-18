@@ -8,10 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from recipes.models import (Favourites, Ingredient, Recipe, ShoppingList,
+from recipes.models import (Favourite, Ingredient, Recipe, ShoppingList,
                             Subscribe, Tag)
 from users.models import User
-
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsStaffOrOwnerOrReadOnly, IsStaffOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
@@ -76,7 +75,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Recipe.objects.prefetch_related().annotate(
             in_favourites=(
-                Exists(Favourites.objects.filter(id=OuterRef('id')))
+                Exists(Favourite.objects.filter(id=OuterRef('id')))
                 if user.is_authenticated
                 else Value(False)
             ),
@@ -104,10 +103,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favourites(self, request, recipe_id):
         recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
         serializer = self.get_serializer(recipe)
-        recipe_in_favourites = Favourites.objects.filter(id=recipe_id).exists()
+        recipe_in_favourites = Favourite.objects.filter(id=recipe_id).exists()
         if request.method == 'GET':
             if not recipe_in_favourites:
-                Favourites.objects.add(recipe)
+                Favourite.objects.add(recipe)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED
                 )
@@ -117,7 +116,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         if request.method == 'DELETE':
             if recipe_in_favourites:
-                Favourites.objects.remove(recipe)
+                Favourite.objects.remove(recipe)
                 return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             RECIPE_NOT_IN_FAVOURITES_ERROR,
@@ -158,7 +157,7 @@ class DownloadShoppingList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self):
-        shopping_list = {}
+        shopping_cart = {}
         ingredients = ShoppingList.objects.values(
             'ingredient_entries__ingredient__name',
             'ingredient_entries__ingredient__measure_unit__name'
@@ -169,15 +168,15 @@ class DownloadShoppingList(APIView):
             measure_unit = ingredient[
                 'ingredient_entries__ingredient__measure_unit__name'
             ]
-            shopping_list[name] = {
+            shopping_cart[name] = {
                 'measure_unit': measure_unit,
                 'amount': amount,
             }
         cart = []
-        for item in shopping_list:
+        for item in shopping_cart:
             cart.append(
-                f'{item}    {shopping_list[item]["amount"]}  '
-                f'{shopping_list[item]["measure_unit"]}\n'
+                f'{item}    {shopping_cart[item]["amount"]}  '
+                f'{shopping_cart[item]["measure_unit"]}\n'
             )
         response = HttpResponse(cart, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="cart.txt"'
