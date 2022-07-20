@@ -19,10 +19,8 @@ from .serializers import (IngredientSerializer, RecipeCreateSerializer,
 
 ALREADY_SUBSCRIBED_ERROR = 'You are already subscribed to this author.'
 NO_SUBSCRIPTION_ERROR = 'You are not subscribed to this author.'
-RECIPE_ALREADY_IN_FAVOURITES_ERROR = 'This recipe is already in favourites.'
-RECIPE_NOT_IN_FAVOURITES_ERROR = 'This recipe is not in favourites.'
-RECIPE_ALREADY_IN_LIST_ERROR = 'This recipe is already in shopping list.'
-RECIPE_NOT_IN_LIST_ERROR = 'This recipe is not in shopping list.'
+RECIPE_ALREADY_IN_LIST_ERROR = 'This recipe is already added.'
+RECIPE_NOT_IN_LIST_ERROR = 'This recipe is not yet added.'
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -94,48 +92,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(
-        methods=('GET', 'DELETE'),
-        detail=False,
-        url_path=r'(?P<recipe_id>\d+)/favorites',
-        serializer_class=RecipeShortSerializer,
-    )
-    def favourites(self, request, recipe_id):
+    def _create_delete_list_object(self, request, recipe_id, class_object):
         recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
         serializer = self.get_serializer(recipe)
-        recipe_in_favourites = Favourite.objects.filter(id=recipe_id).exists()
-        if request.method == 'GET':
-            if not recipe_in_favourites:
-                Favourite.objects.add(recipe)
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED
-                )
-            return Response(
-                RECIPE_ALREADY_IN_FAVOURITES_ERROR,
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        if request.method == 'DELETE':
-            if recipe_in_favourites:
-                Favourite.objects.remove(recipe)
-                return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            RECIPE_NOT_IN_FAVOURITES_ERROR,
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    @action(
-        methods=('GET', 'DELETE'),
-        detail=False,
-        url_path=r'(?P<recipe_id>\d+)/shopping_list',
-        serializer_class=RecipeShortSerializer,
-    )
-    def shopping_list(self, request, recipe_id):
-        recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
-        serializer = self.get_serializer(recipe)
-        recipe_in_list = ShoppingList.objects.filter(id=recipe_id).exists()
+        recipe_in_list = class_object.objects.filter(id=recipe_id).exists()
         if request.method == 'GET':
             if not recipe_in_list:
-                ShoppingList.objects.add(recipe)
+                class_object.objects.add(recipe)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED
                 )
@@ -145,12 +108,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         if request.method == 'DELETE':
             if recipe_in_list:
-                ShoppingList.objects.remove(recipe)
+                class_object.objects.remove(recipe)
                 return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             RECIPE_NOT_IN_LIST_ERROR,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    @action(
+        methods=('GET', 'DELETE'),
+        detail=False,
+        url_path=r'(?P<recipe_id>\d+)/favorites',
+        serializer_class=RecipeShortSerializer,
+    )
+    def favourites(self, request, recipe_id):
+        self._create_delete_list_object(request, recipe_id, Favourite)
+
+    @action(
+        methods=('GET', 'DELETE'),
+        detail=False,
+        url_path=r'(?P<recipe_id>\d+)/shopping_list',
+        serializer_class=RecipeShortSerializer,
+    )
+    def shopping_list(self, request, recipe_id):
+        self._create_delete_list_object(request, recipe_id, ShoppingList)
 
 
 class DownloadShoppingList(APIView):
