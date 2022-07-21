@@ -91,7 +91,6 @@ jobs:
             sudo docker compose up -d
             sudo docker image prune -f
             sudo docker compose exec backend python manage.py migrate recipes
-            sudo docker compose exec backend python manage.py migrate users
             sudo docker compose exec backend python manage.py migrate
             sudo docker compose exec backend python manage.py collectstatic --noinput
 
