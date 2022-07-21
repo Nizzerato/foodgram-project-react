@@ -3,9 +3,8 @@ version: '3.3'
 services:
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: nizzerato/foodgram-frontend:latest
+    restart: always
     volumes:
       - ../frontend/:/app/result_build/
 
