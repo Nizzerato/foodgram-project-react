@@ -2,14 +2,13 @@ from django.db.models import Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django_filters import rest_framework
+from recipes.models import (Favourite, Ingredient, Recipe, ShoppingList,
+                            Subscribe, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from recipes.models import (Favourite, Ingredient, Recipe, ShoppingList,
-                            Subscribe, Tag)
 from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter

@@ -1,8 +1,7 @@
-from rest_framework import serializers
-
 from recipes.models import (Favourite, Ingredient, Recipe,
                             RecipeIngredientEntry, ShoppingList, Subscribe,
                             Tag)
+from rest_framework import serializers
 from users.models import User
 
 EMPTY_INGREDIENTS_LIST_ERROR = (
