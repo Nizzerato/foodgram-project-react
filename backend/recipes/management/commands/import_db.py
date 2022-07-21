@@ -30,7 +30,9 @@ class Command(BaseCommand):
 
                 if len(ingredients) > 999:
                     Ingredient.objects.bulk_create(ingredients)
-                    self.stdout.write(f'{len(ingredients)} entries were bulk created')
+                    self.stdout.write(
+                        f'{len(ingredients)} entries were bulk created'
+                    )
                     ingredients = []
 
         if ingredients:
