@@ -1,18 +1,40 @@
 import csv
 
-from django.core.management.base import BaseCommand
+from django.core.management import BaseCommand
 
-from ...models import Ingredient
+from recipes.models import Ingredient, MeasureUnit
 
 
 class Command(BaseCommand):
-    help = 'import csv file to db'
+    help = "Loads ingredients and their measurement units from CSV file."
+
+    def add_arguments(self, parser):
+        parser.add_argument('file_path', type=str)
 
     def handle(self, *args, **options):
-        with open('data/ingredients.csv', encoding='utf-8') as file:
-            file_reader = csv.reader(file)
-            for row in file_reader:
-                Ingredient.objects.get_or_create(
-                    name=row[0],
-                    measure_unit=row[1],
+        self.stdout.write('Process started')
+        file_path = options['file_path']
+        ingredients = []
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            self.stdout.write(f'Opened {file_path}')
+            reader = csv.reader(file, delimiter=',')
+            for entry in reader:
+                measure_unit = MeasureUnit.objects.get_or_create(
+                    name=entry[1]
+                )[0]
+                ingredient = Ingredient(
+                    name=entry[0], measure_unit=measure_unit
                 )
+                ingredients.append(ingredient)
+                self.stdout.write(f'Entry {entry[0]}, {entry[1]} was parsed')
+
+                if len(ingredients) > 999:
+                    Ingredient.objects.bulk_create(ingredients)
+                    self.stdout.write(f'{len(ingredients)} entries were bulk created')
+                    ingredients = []
+
+        if ingredients:
+            Ingredient.objects.bulk_create(ingredients)
+            self.stdout.write(f'{len(ingredients)} entries were bulk created')
+
+        self.stdout.write('Process finished')
