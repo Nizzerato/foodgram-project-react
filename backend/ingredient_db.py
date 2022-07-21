@@ -19,6 +19,7 @@ class Command(BaseCommand):
                     measure_unit=measure_unit
                 )
 
+
 app = Command()
 app.handle()
 print('Database successfully filled with ingredients')
