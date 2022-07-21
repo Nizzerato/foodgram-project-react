@@ -147,7 +147,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     )
 
     def validate(self, data):
-        ingredients = self.data.get('ingredients')
+        ingredients = data.get('ingredients')
         ingredients_id = []
         if len(ingredients) == 0:
             raise serializers.ValidationError(EMPTY_INGREDIENTS_LIST_ERROR)
