@@ -20,8 +20,8 @@ jobs:
         pip install -r ./backend/requirements.txt
     - name: flake8 and django tests
       run: |
+        cd backend
         python -m flake8
-        pytest
 
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
