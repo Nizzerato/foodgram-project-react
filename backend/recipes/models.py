@@ -76,7 +76,7 @@ class RecipeIngredientEntry(models.Model):
     class Meta:
         ordering = ('id',)
         verbose_name = 'Recipe Ingredient Entry'
-        verbose_name_plural = 'Recipe Ingradient Entries'
+        verbose_name_plural = 'Recipe Ingredient Entries'
         constraints = [
             models.UniqueConstraint(
                 fields=['ingredient', 'recipe'],
