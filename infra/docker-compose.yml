@@ -2,6 +2,11 @@ version: '3.8'
 
 services:
 
+  frontend:
+    image: nizzerato/foodgram-frontend:latest
+    volumes:
+      - ../frontend/:/app/result_build/
+
   db:
     image: postgres:13.0-alpine
     volumes:
@@ -9,7 +14,7 @@ services:
     env_file:
       - ./.env
 
-  web:
+  backend:
     image: nizzerato/foodgram-backend:latest
     restart: always
     volumes:
@@ -19,13 +24,6 @@ services:
       - db
     env_file:
       - ./.env
-
-  frontend:
-    image: nizzerato/foodgram-frontend:latest
-    volumes:
-      - ../frontend/:/app/result_build/
-    depends_on:
-      - web
 
   nginx:
     image: nginx:1.19.3
@@ -38,7 +36,7 @@ services:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     depends_on:
-      - web
+      - backend
 
 
 volumes:
