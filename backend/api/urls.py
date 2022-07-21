@@ -6,14 +6,16 @@ from .views import (DownloadShoppingList, IngredientViewSet, RecipeViewSet,
                     SubscribeViewSet, TagViewSet)
 
 router_v1 = DefaultRouter()
-router_v1.register(r'ingredients', IngredientViewSet)
+router_v1.register(
+    r'ingredients', IngredientViewSet, basename='ingredients'
+)
 router_v1.register(r'recipes', RecipeViewSet, basename='recipes')
-router_v1.register(r'tags', TagViewSet)
+router_v1.register(r'tags', TagViewSet, basename='tags')
 
 
 urlpatterns = (
     path(
-        'users/subscribtions/',
+        'users/subscriptions/',
         SubscribeViewSet.as_view({'get': 'list'}),
         name='subscriptions'
     ),
