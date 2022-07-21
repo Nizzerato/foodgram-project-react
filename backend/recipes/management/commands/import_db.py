@@ -14,5 +14,5 @@ class Command(BaseCommand):
             for row in file_reader:
                 Ingredient.objects.get_or_create(
                     name=row[0],
-                    measurement_unit=row[1],
+                    measure_unit=row[1],
                 )
