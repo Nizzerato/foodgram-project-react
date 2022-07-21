@@ -20,7 +20,6 @@ jobs:
         pip install -r ./backend/requirements.txt
     - name: flake8 and django tests
       run: |
-        cd backend
         python -m flake8
 
   build_and_push_frontend_to_docker_hub:
@@ -90,6 +89,10 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             sudo docker compose up -d
+            sudo docker compose exec web python manage.py migrate recipes
+            sudo docker compose exec web python manage.py migrate users
+            sudo docker compose exec web python manage.py migrate
+            sudo docker compose exec web python manage.py collectstatic --noinput
 
   send_message:
     runs-on: ubuntu-latest
