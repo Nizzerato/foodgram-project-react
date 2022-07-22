@@ -73,12 +73,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Recipe.objects.prefetch_related().annotate(
-            in_favourites=(
+            is_in_favourites=(
                 Exists(Favourite.objects.filter(id=OuterRef('id')))
                 if user.is_authenticated
                 else Value(False)
             ),
-            in_shopping_list=(
+            is_in_shopping_list=(
                 Exists(ShoppingList.objects.filter(id=OuterRef('id')))
                 if user.is_authenticated
                 else Value(False)
