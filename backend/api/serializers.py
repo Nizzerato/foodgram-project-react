@@ -115,7 +115,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'in_shopping_list',
         )
 
-    def get_is_in_favourites(self, obj):
+    def get_in_favourites(self, obj):
         user = self.context.get('request').user
         return (
             Favourite.objects.filter(
@@ -125,7 +125,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             else False
         )
 
-    def get_is_in_shopping_list(self, obj):
+    def get_in_shopping_list(self, obj):
         user = self.context.get('request').user
         return (
             ShoppingList.objects.filter(
