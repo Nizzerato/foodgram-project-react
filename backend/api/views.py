@@ -48,14 +48,14 @@ class SubscribeViewSet(viewsets.ModelViewSet):
         return get_list_or_404(User, follows__user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        user_id = self.kwargs.get('users_id')
+        user_id = self.kwargs.get('user_id')
         user = get_object_or_404(User, id=user_id)
         Subscribe.objects.create(
             user=request.user, follows=user)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        author_id = self.kwargs['users_id']
+        author_id = self.kwargs['user_id']
         user_id = request.user.id
         subscribe = get_object_or_404(
             Subscribe, user__id=user_id, follows__id=author_id)
@@ -139,7 +139,7 @@ class DownloadShoppingList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self):
-        shopping_list = {}
+        shopping_cart = {}
         ingredients = ShoppingList.objects.values(
             'ingredient_entries__ingredient__name',
             'ingredient_entries__ingredient__measure_unit__name'
@@ -150,15 +150,15 @@ class DownloadShoppingList(APIView):
             measure_unit = ingredient[
                 'ingredient_entries__ingredient__measure_unit__name'
             ]
-            shopping_list[name] = {
+            shopping_cart[name] = {
                 'measure_unit': measure_unit,
                 'amount': amount,
             }
         cart = []
-        for item in shopping_list:
+        for item in shopping_cart:
             cart.append(
-                f'{item}    {shopping_list[item]["amount"]}  '
-                f'{shopping_list[item]["measure_unit"]}\n'
+                f'{item}    {shopping_cart[item]["amount"]}  '
+                f'{shopping_cart[item]["measure_unit"]}\n'
             )
         response = HttpResponse(cart, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="cart.txt"'
