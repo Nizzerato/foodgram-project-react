@@ -48,14 +48,14 @@ class SubscribeViewSet(viewsets.ModelViewSet):
         return get_list_or_404(User, follows__user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        user_id = self.kwargs.get('user_id')
+        user_id = self.kwargs.get('users_id')
         user = get_object_or_404(User, id=user_id)
         Subscribe.objects.create(
             user=request.user, follows=user)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        author_id = self.kwargs['user_id']
+        author_id = self.kwargs['users_id']
         user_id = request.user.id
         subscribe = get_object_or_404(
             Subscribe, user__id=user_id, follows__id=author_id)
