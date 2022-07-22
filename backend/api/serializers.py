@@ -1,3 +1,4 @@
+from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (Favourite, Ingredient, Recipe,
                             RecipeIngredientEntry, ShoppingList, Subscribe,
                             Tag)
@@ -87,7 +88,7 @@ class RecipeIngredientEntryCreateSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     author = UserSerializer(read_only=True)
-    image = serializers.ImageField()
+    image = Base64ImageField(max_length=None, use_url=False,)
     ingredients = RecipeIngredientEntrySerializer(
         source='ingredient_entries', many=True
     )
@@ -138,7 +139,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
-    image = serializers.ImageField()
+    image = Base64ImageField(max_length=None, use_url=False,)
     ingredients = RecipeIngredientEntryCreateSerializer(
         many=True,
     )

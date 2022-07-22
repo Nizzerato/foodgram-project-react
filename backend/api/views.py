@@ -45,20 +45,20 @@ class SubscribeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
-        return get_list_or_404(User, following__user=self.request.user)
+        return get_list_or_404(User, follows__user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         user_id = self.kwargs.get('users_id')
         user = get_object_or_404(User, id=user_id)
         Subscribe.objects.create(
-            user=request.user, following=user)
+            user=request.user, follows=user)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
         author_id = self.kwargs['users_id']
         user_id = request.user.id
         subscribe = get_object_or_404(
-            Subscribe, user__id=user_id, following__id=author_id)
+            Subscribe, user__id=user_id, follows__id=author_id)
         subscribe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -119,7 +119,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=('GET', 'DELETE'),
         detail=False,
-        url_path=r'(?P<recipe_id>\d+)/favourite',
+        url_path=r'(?P<recipe_id>\d+)/favourites',
         serializer_class=RecipeShortSerializer,
     )
     def favourites(self, request, recipe_id):
@@ -128,7 +128,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=('GET', 'DELETE'),
         detail=False,
-        url_path=r'(?P<recipe_id>\d+)/shopping_cart',
+        url_path=r'(?P<recipe_id>\d+)/shopping_list',
         serializer_class=RecipeShortSerializer,
     )
     def shopping_list(self, request, recipe_id):
@@ -139,7 +139,7 @@ class DownloadShoppingList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self):
-        shopping_cart = {}
+        shopping_list = {}
         ingredients = ShoppingList.objects.values(
             'ingredient_entries__ingredient__name',
             'ingredient_entries__ingredient__measure_unit__name'
@@ -150,15 +150,15 @@ class DownloadShoppingList(APIView):
             measure_unit = ingredient[
                 'ingredient_entries__ingredient__measure_unit__name'
             ]
-            shopping_cart[name] = {
+            shopping_list[name] = {
                 'measure_unit': measure_unit,
                 'amount': amount,
             }
         cart = []
-        for item in shopping_cart:
+        for item in shopping_list:
             cart.append(
-                f'{item}    {shopping_cart[item]["amount"]}  '
-                f'{shopping_cart[item]["measure_unit"]}\n'
+                f'{item}    {shopping_list[item]["amount"]}  '
+                f'{shopping_list[item]["measure_unit"]}\n'
             )
         response = HttpResponse(cart, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="cart.txt"'
