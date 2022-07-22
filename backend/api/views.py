@@ -119,7 +119,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=('GET', 'DELETE'),
         detail=False,
-        url_path=r'(?P<recipe_id>\d+)/favorites',
+        url_path=r'(?P<recipe_id>\d+)/favourite',
         serializer_class=RecipeShortSerializer,
     )
     def favourites(self, request, recipe_id):
@@ -128,7 +128,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=('GET', 'DELETE'),
         detail=False,
-        url_path=r'(?P<recipe_id>\d+)/shopping_list',
+        url_path=r'(?P<recipe_id>\d+)/shopping_cart',
         serializer_class=RecipeShortSerializer,
     )
     def shopping_list(self, request, recipe_id):
