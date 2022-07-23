@@ -181,6 +181,10 @@ class DownloadShoppingList(APIView):
         sheet.save()
         return response
 
+    @action(
+        methods=('GET',),
+        detail=False,
+    )
     def download(self, request):
         result = RecipeIngredientEntry.objects.filter(
             recipe__in_shopping_list__user=request.user
