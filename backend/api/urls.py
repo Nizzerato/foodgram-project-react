@@ -27,7 +27,7 @@ urlpatterns = (
     path(
         'recipes/download_shopping_cart/',
         DownloadShoppingList.as_view(),
-        name='download_shopping_list',
+        name='download_shopping_cart',
     ),
     path('', include(router_v1.urls)),
     path('', include('djoser.urls')),
