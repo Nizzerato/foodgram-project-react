@@ -59,35 +59,6 @@ class Ingredient(models.Model):
         return self.name
 
 
-class RecipeIngredientEntry(models.Model):
-    ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.RESTRICT,
-        verbose_name='Ingredient'
-    )
-    recipe = models.ForeignKey(
-        'recipes.Recipe',
-        on_delete=models.CASCADE,
-        related_name='ingredient_entries',
-        verbose_name='Recipe'
-    )
-    amount = models.PositiveIntegerField(verbose_name='Ingredient Amount')
-
-    class Meta:
-        ordering = ('id',)
-        verbose_name = 'Recipe Ingredient Entry'
-        verbose_name_plural = 'Recipe Ingredient Entries'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['ingredient', 'recipe'],
-                name='unique_recipeingrediententry'
-            )
-        ]
-
-    def __str__(self):
-        return self.ingredient.name
-
-
 class Recipe(models.Model):
     author = models.ForeignKey(
         User,
@@ -129,6 +100,35 @@ class Recipe(models.Model):
     @property
     def favourites_entries(self):
         return self.in_favourites.count()
+
+
+class RecipeIngredientEntry(models.Model):
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.RESTRICT,
+        verbose_name='Ingredient'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='ingredient_entries',
+        verbose_name='Recipe'
+    )
+    amount = models.PositiveIntegerField(verbose_name='Ingredient Amount')
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Recipe Ingredient Entry'
+        verbose_name_plural = 'Recipe Ingredient Entries'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ingredient', 'recipe'],
+                name='unique_recipeingrediententry'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.ingredient} {self.recipe}'
 
 
 class Favourite(models.Model):
