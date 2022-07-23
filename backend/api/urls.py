@@ -15,7 +15,7 @@ router_v1.register(r'tags', TagViewSet, basename='tags')
 
 urlpatterns = (
     path(
-        'users/subscriptions/',
+        r'users/subscriptions/',
         SubscribeViewSet.as_view({'get': 'list'}),
         name='subscriptions'
     ),

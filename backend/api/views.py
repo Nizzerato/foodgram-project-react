@@ -108,7 +108,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 RECIPE_ALREADY_IN_LIST_ERROR,
                 status=status.HTTP_400_BAD_REQUEST
             )
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             if recipe_in_list:
                 class_object.objects.remove(
                     user=self.request.user, recipe=recipe
