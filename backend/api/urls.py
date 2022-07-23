@@ -20,7 +20,7 @@ urlpatterns = (
         name='subscriptions'
     ),
     path(
-        'users/<int:uid>/subscribe/',
+        'users/<int:users_id>/subscribe/',
         SubscribeViewSet.as_view({'post': 'create', 'delete': 'delete'}),
         name='subscribe'
     ),
