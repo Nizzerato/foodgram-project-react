@@ -99,7 +99,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe_in_list = class_object.objects.filter(id=recipe_id).exists()
         if request.method == 'POST':
             if not recipe_in_list:
-                class_object.objects.add(recipe)
+                class_object.objects.create(recipe)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED
                 )
@@ -123,7 +123,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer_class=RecipeShortSerializer,
     )
     def favourites(self, request, recipe_id):
-        self._create_delete_list_object(self, request, recipe_id, Favourite)
+        self._create_delete_list_object(request, recipe_id, Favourite)
 
     @action(
         methods=('POST', 'DELETE'),
@@ -132,7 +132,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer_class=RecipeShortSerializer,
     )
     def shopping_list(self, request, recipe_id):
-        self._create_delete_list_object(self, request, recipe_id, ShoppingList)
+        self._create_delete_list_object(request, recipe_id, ShoppingList)
 
 
 class DownloadShoppingList(APIView):
