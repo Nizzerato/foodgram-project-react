@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from django_filters import rest_framework
-from backend.recipes.models import RecipeIngredientEntry
 from recipes.models import (Favourite, Ingredient, Recipe, ShoppingList,
                             Subscribe, Tag)
 from reportlab.lib.pagesizes import A4
@@ -16,6 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import User
+
+from backend.recipes.models import RecipeIngredientEntry
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsStaffOrOwnerOrReadOnly, IsStaffOrReadOnly
