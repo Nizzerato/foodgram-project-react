@@ -3,8 +3,9 @@ from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from django_filters import rest_framework
-from recipes.models import (Favourite, Ingredient, Recipe, RecipeIngredientEntry, 
-                            ShoppingList, Subscribe, Tag)
+from recipes.models import (Favourite, Ingredient, Recipe,
+                            RecipeIngredientEntry, ShoppingList, Subscribe,
+                            Tag)
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -143,15 +144,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class DownloadShoppingList(APIView):
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, ]
 
     @staticmethod
     def canvas_method(dictionary):
         response = HttpResponse(content_type='application/pdf')
         response[
             'Content-Disposition'
-        ] = 'attachment; \
-        filename = "shopping_cart.pdf"'
+        ] = 'attachment; filename = "shopping_cart.pdf"'
         begin_position_x, begin_position_y = 40, 650
         sheet = canvas.Canvas(response, pagesize=A4)
         pdfmetrics.registerFont(
@@ -184,9 +184,9 @@ class DownloadShoppingList(APIView):
     def download(self, request):
         result = RecipeIngredientEntry.objects.filter(
             recipe__in_shopping_list__user=request.user
-            ).values(
-                'ingredient__name', 'ingredient__measure_unit'
-            ).order_by(
-                'ingredient__name'
-            ).annotate(ingredient_total=Sum('amount'))
+        ).values(
+            'ingredient__name', 'ingredient__measure_unit'
+        ).order_by(
+            'ingredient__name'
+        ).annotate(ingredient_total=Sum('amount'))
         return self.canvas_method(result)
