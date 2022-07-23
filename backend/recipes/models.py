@@ -48,7 +48,6 @@ class Ingredient(models.Model):
         on_delete=models.RESTRICT,
         verbose_name='Ingredient Measure Unit'
     )
-    amount = models.PositiveIntegerField(verbose_name='Ingredient Amount')
 
     class Meta:
         ordering = ('name',)
