@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.db.models import Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
@@ -19,9 +21,10 @@ from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsStaffOrOwnerOrReadOnly, IsStaffOrReadOnly
-from .serializers import (IngredientSerializer, RecipeCreateSerializer,
-                          RecipeSerializer, RecipeShortSerializer,
-                          TagSerializer, UserSubscriptionSerializer)
+from .serializers import (FavouriteSerializer, IngredientSerializer,
+                          RecipeCreateSerializer, RecipeSerializer,
+                          ShoppingListSerializer, TagSerializer,
+                          UserSubscriptionSerializer)
 
 ALREADY_SUBSCRIBED_ERROR = 'You are already subscribed to this author.'
 NO_SUBSCRIPTION_ERROR = 'You are not subscribed to this author.'
@@ -97,50 +100,38 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def _create_delete_list_object(self, request, recipe_id, class_object):
-        recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
-        serializer = self.get_serializer(recipe)
-        recipe_in_list = class_object.objects.filter(id=recipe_id).exists()
-        if request.method == 'POST':
-            if not recipe_in_list:
-                class_object.objects.create(
-                    user=self.request.user, recipe=recipe
-                )
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED
-                )
-            return Response(
-                RECIPE_ALREADY_IN_LIST_ERROR,
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        if request.method == 'DELETE':
-            if recipe_in_list:
-                class_object.objects.remove(
-                    user=self.request.user, recipe=recipe
-                )
-                return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            RECIPE_NOT_IN_LIST_ERROR,
-            status=status.HTTP_400_BAD_REQUEST
+
+class BaseFavoriteCartViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, ]
+
+    def create(self, request, *args, **kwargs):
+        recipe_id = int(self.kwargs['recipes_id'])
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        self.model.objects.create(
+            user=request.user, recipe=recipe
         )
+        return Response(HTTPStatus.CREATED)
 
-    @action(
-        methods=('POST', 'DELETE'),
-        detail=False,
-        url_path=r'(?P<recipe_id>\d+)/favorite',
-        serializer_class=RecipeShortSerializer,
-    )
-    def favourites(self, request, recipe_id):
-        self._create_delete_list_object(request, recipe_id, Favourite)
+    def delete(self, request, *args, **kwargs):
+        recipe_id = self.kwargs['recipes_id']
+        user_id = request.user.id
+        object = get_object_or_404(
+            self.model, user__id=user_id, recipe__id=recipe_id
+        )
+        object.delete()
+        return Response(HTTPStatus.NO_CONTENT)
 
-    @action(
-        methods=('POST', 'DELETE'),
-        detail=False,
-        url_path=r'(?P<recipe_id>\d+)/shopping_cart',
-        serializer_class=RecipeShortSerializer,
-    )
-    def shopping_list(self, request, recipe_id):
-        self._create_delete_list_object(request, recipe_id, ShoppingList)
+
+class ShoppingListViewSet(BaseFavoriteCartViewSet):
+    serializer_class = ShoppingListSerializer
+    queryset = ShoppingList.objects.all()
+    model = ShoppingList
+
+
+class FavouriteViewSet(BaseFavoriteCartViewSet):
+    serializer_class = FavouriteSerializer
+    queryset = Favourite.objects.all()
+    model = Favourite
 
 
 class DownloadShoppingList(APIView):
