@@ -55,11 +55,10 @@ class SubscribeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        author_id = self.kwargs['users_id']
-        user_id = request.user.id
-        subscribe = get_object_or_404(
-            Subscribe, user__id=user_id, follows__id=author_id)
-        subscribe.delete()
+        user_id = self.kwargs.get('users_id')
+        user = get_object_or_404(User, id=user_id)
+        Subscribe.objects.delete(
+            user=request.user, follows=user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -109,7 +108,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 RECIPE_ALREADY_IN_LIST_ERROR,
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if request.method == 'DELETE':
+        elif request.method == 'DELETE':
             if recipe_in_list:
                 class_object.objects.remove(
                     user=self.request.user, recipe=recipe
