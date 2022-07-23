@@ -97,7 +97,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
         serializer = self.get_serializer(recipe)
         recipe_in_list = class_object.objects.filter(id=recipe_id).exists()
-        if request.method == 'GET':
+        if request.method == 'POST':
             if not recipe_in_list:
                 class_object.objects.add(recipe)
                 return Response(
@@ -117,7 +117,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     @action(
-        methods=('GET', 'DELETE'),
+        methods=('POST', 'DELETE'),
         detail=False,
         url_path=r'(?P<recipe_id>\d+)/favorite',
         serializer_class=RecipeShortSerializer,
@@ -126,7 +126,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         self._create_delete_list_object(request, recipe_id, Favourite)
 
     @action(
-        methods=('GET', 'DELETE'),
+        methods=('POST', 'DELETE'),
         detail=False,
         url_path=r'(?P<recipe_id>\d+)/shopping_cart',
         serializer_class=RecipeShortSerializer,
