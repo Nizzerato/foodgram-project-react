@@ -25,7 +25,7 @@ urlpatterns = (
         name='subscribe'
     ),
     path(
-        'recipes/download_shopping_list/',
+        'recipes/download_shopping_cart/',
         DownloadShoppingList.as_view(),
         name='download_shopping_list',
     ),
