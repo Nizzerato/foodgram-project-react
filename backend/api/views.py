@@ -99,7 +99,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe_in_list = class_object.objects.filter(id=recipe_id).exists()
         if request.method == 'POST':
             if not recipe_in_list:
-                class_object.objects.create(recipe)
+                class_object.objects.create(user=self.request.user, recipe=recipe)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED
                 )
@@ -109,7 +109,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         if request.method == 'DELETE':
             if recipe_in_list:
-                class_object.objects.remove(recipe)
+                class_object.objects.remove(user=self.request.user, recipe=recipe)
                 return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             RECIPE_NOT_IN_LIST_ERROR,
@@ -138,7 +138,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class DownloadShoppingList(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self):
+    def get(self, request):
         shopping_cart = {}
         ingredients = ShoppingList.objects.values(
             'ingredient_entries__ingredient__name',
