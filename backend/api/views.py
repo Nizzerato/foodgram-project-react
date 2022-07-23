@@ -3,8 +3,13 @@ from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from django_filters import rest_framework
+from backend.recipes.models import RecipeIngredientEntry
 from recipes.models import (Favourite, Ingredient, Recipe, ShoppingList,
                             Subscribe, Tag)
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -139,30 +144,50 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class DownloadShoppingList(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated,]
 
-    def get(self, request):
-        shopping_cart = {}
-        ingredients = ShoppingList.objects.values(
-            'ingredient_entries__ingredient__name',
-            'ingredient_entries__ingredient__measure_unit__name'
-        ).annotate(total=Sum('ingredient_entries__amount'))
-        for ingredient in ingredients:
-            amount = ingredient['total']
-            name = ingredient['ingredient_entries__ingredient__name']
-            measure_unit = ingredient[
-                'ingredient_entries__ingredient__measure_unit__name'
-            ]
-            shopping_cart[name] = {
-                'measure_unit': measure_unit,
-                'amount': amount,
-            }
-        cart = []
-        for item in shopping_cart:
-            cart.append(
-                f'{item}    {shopping_cart[item]["amount"]}  '
-                f'{shopping_cart[item]["measure_unit"]}\n'
+    @staticmethod
+    def canvas_method(dictionary):
+        response = HttpResponse(content_type='application/pdf')
+        response[
+            'Content-Disposition'
+        ] = 'attachment; \
+        filename = "shopping_cart.pdf"'
+        begin_position_x, begin_position_y = 40, 650
+        sheet = canvas.Canvas(response, pagesize=A4)
+        pdfmetrics.registerFont(
+            TTFont('List', 'data/List.ttf')
+        )
+        sheet.setFont('List', 50)
+        sheet.setTitle('Список покупок')
+        sheet.drawString(
+            begin_position_x,
+            begin_position_y + 40, 'Список покупок: '
+        )
+        sheet.setFont('List', 24)
+        for number, item in enumerate(dictionary, start=1):
+            if begin_position_y < 100:
+                begin_position_y = 700
+                sheet.showPage()
+                sheet.setFont('List', 24)
+            sheet.drawString(
+                begin_position_x,
+                begin_position_y,
+                f'{number}.  {item["ingredient__name"]} - '
+                f'{item["ingredient_total"]}'
+                f' {item["ingredient__measure_unit"]}'
             )
-        response = HttpResponse(cart, 'Content-Type: text/plain')
-        response['Content-Disposition'] = 'attachment; filename="cart.txt"'
+            begin_position_y -= 30
+        sheet.showPage()
+        sheet.save()
         return response
+
+    def download(self, request):
+        result = RecipeIngredientEntry.objects.filter(
+            recipe__in_shopping_list__user=request.user
+            ).values(
+                'ingredient__name', 'ingredient__measure_unit'
+            ).order_by(
+                'ingredient__name'
+            ).annotate(ingredient_total=Sum('amount'))
+        return self.canvas_method(result)

@@ -14,4 +14,5 @@ pytest==6.2.4
 pytest-django==4.4.0
 python-dotenv==0.19.2
 pytest-pythonpath==0.7.3
+reportlab==3.6.9
 sqlparse==0.3.1
