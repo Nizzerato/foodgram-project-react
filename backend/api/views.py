@@ -3,13 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from django_filters import rest_framework
-from recipes.models import (Favourite, Ingredient, Recipe,
-                            RecipeIngredientEntry, ShoppingList, Subscribe,
-                            Tag)
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
+from recipes.models import (Favourite, Ingredient, Recipe, ShoppingList,
+                            Subscribe, Tag)
 from rest_framework import generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -148,27 +143,27 @@ class DownloadShoppingList(APIView):
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request):
-        shopping_cart = {} 
-        ingredients = ShoppingList.objects.values( 
-            'ingredient_entries__ingredient__name', 
-            'ingredient_entries__ingredient__measure_unit__name' 
-        ).annotate(total=Sum('ingredient_entries__amount')) 
-        for ingredient in ingredients: 
-            amount = ingredient['total'] 
-            name = ingredient['ingredient_entries__ingredient__name'] 
-            measure_unit = ingredient[ 
-                'ingredient_entries__ingredient__measure_unit__name' 
-            ] 
-            shopping_cart[name] = { 
-                'measure_unit': measure_unit, 
-                'amount': amount, 
-            } 
-        cart = [] 
-        for item in shopping_cart: 
-            cart.append( 
-                f'{item}    {shopping_cart[item]["amount"]}  ' 
-                f'{shopping_cart[item]["measure_unit"]}\n' 
-            ) 
-        response = HttpResponse(cart, 'Content-Type: text/plain') 
-        response['Content-Disposition'] = 'attachment; filename="cart.txt"' 
-        return response 
+        shopping_cart = {}
+        ingredients = ShoppingList.objects.values(
+            'ingredient_entries__ingredient__name',
+            'ingredient_entries__ingredient__measure_unit__name'
+        ).annotate(total=Sum('ingredient_entries__amount'))
+        for ingredient in ingredients:
+            amount = ingredient['total']
+            name = ingredient['ingredient_entries__ingredient__name']
+            measure_unit = ingredient[
+                'ingredient_entries__ingredient__measure_unit__name'
+            ]
+            shopping_cart[name] = {
+                'measure_unit': measure_unit,
+                'amount': amount,
+            }
+        cart = []
+        for item in shopping_cart:
+            cart.append(
+                f'{item}    {shopping_cart[item]["amount"]}  '
+                f'{shopping_cart[item]["measure_unit"]}\n'
+            )
+        response = HttpResponse(cart, 'Content-Type: text/plain')
+        response['Content-Disposition'] = 'attachment; filename="cart.txt"'
+        return response
