@@ -237,7 +237,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
         image = validated_data.get('image')
         text = validated_data.get('text')
         cooking_time = validated_data.get('cooking_time')
-        ingredients = validated_data.pop('ingredientrecipes')
+        ingredients = validated_data.pop('ingredient_entries')
         recipe = Recipe.objects.create(
             author=author,
             name=name,
