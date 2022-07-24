@@ -40,7 +40,10 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.select_related()
     permission_classes = [IsStaffOrReadOnly, ]
     serializer_class = IngredientSerializer
-    filter_backends = (rest_framework.DjangoFilterBackend, IngredientSearchFilter)
+    filter_backends = (
+        rest_framework.DjangoFilterBackend,
+        IngredientSearchFilter
+    )
     pagination_class = None
     search_fields = ['^name', ]
 
