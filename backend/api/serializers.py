@@ -97,6 +97,19 @@ class ShoppingListSerializer(serializers.Serializer):
     cooking_time = serializers.IntegerField()
     image = Base64ImageField(max_length=None, use_url=False,)
 
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        if request.GET.get('recipes_limit'):
+            recipes_limit = int(request.GET.get('recipes_limit'))
+            queryset = Recipe.objects.filter(
+                author__id=obj.id
+            ).order_by('id')[:recipes_limit]
+        else:
+            queryset = Recipe.objects.filter(
+                author__id=obj.id
+            ).order_by('id')
+        return RecipeShortSerializer(queryset, many=True).data
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
