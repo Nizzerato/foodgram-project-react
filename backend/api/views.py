@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from django.db.models import Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 
 from django_filters import rest_framework
 from recipes.models import (Favourite, Ingredient, Recipe,
@@ -69,17 +69,11 @@ class SubscribeViewSet(viewsets.ModelViewSet):
 
 
 class ListFollowViewSet(generics.ListAPIView):
-    queryset = User.objects.all()
     permission_classes = [IsAuthenticated, ]
     serializer_class = UserSubscriptionSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request, 'user': self.request.user})
-        return context
-
     def get_queryset(self):
-        return self.request.user.follows.prefetch_related()
+        return get_list_or_404(User, follows__user=self.request.user)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
