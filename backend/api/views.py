@@ -37,7 +37,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Ingredient.objects.select_related()
+    queryset = Ingredient.objects.all()
     permission_classes = [IsStaffOrReadOnly, ]
     serializer_class = IngredientSerializer
     filter_backends = (
@@ -45,7 +45,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
         IngredientSearchFilter
     )
     pagination_class = None
-    search_fields = ['^name', ]
 
 
 class SubscribeViewSet(viewsets.ModelViewSet):
@@ -78,26 +77,11 @@ class ListFollowViewSet(generics.ListAPIView):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.prefetch_related()
+    queryset = Recipe.objects.all()
     permission_classes = [IsStaffOrOwnerOrReadOnly, ]
     filter_class = RecipeFilter
     filter_backends = (rest_framework.DjangoFilterBackend,)
     http_method_names = ('get', 'post', 'delete', 'put', 'patch')
-
-    def get_queryset(self):
-        user = self.request.user
-        return Recipe.objects.prefetch_related().annotate(
-            is_in_favorites=(
-                Exists(Favorite.objects.filter(id=OuterRef('id')))
-                if user.is_authenticated
-                else Value(False)
-            ),
-            is_in_shopping_cart=(
-                Exists(ShoppingCart.objects.filter(id=OuterRef('id')))
-                if user.is_authenticated
-                else Value(False)
-            ),
-        )
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
