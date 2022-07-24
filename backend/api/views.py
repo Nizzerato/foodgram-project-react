@@ -195,3 +195,4 @@ class DownloadShoppingList(APIView):
                 'ingredient__name'
             ).annotate(ingredient_total=Sum('amount'))
             return self.canvas_method(result)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
