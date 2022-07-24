@@ -1,10 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-
-def get_deleted_user():
-    return get_user_model().objects.get_or_create(username='deleted')[0]
 
 
 class User(AbstractUser):
@@ -15,6 +10,7 @@ class User(AbstractUser):
         verbose_name='Username'
     )
     email = models.EmailField(
+        db_index=True,
         max_length=254,
         blank=False,
         unique=True,

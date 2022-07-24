@@ -1,7 +1,8 @@
+from djoser.serializers import UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (Favorite, Ingredient, Recipe,
                             RecipeIngredientEntry, ShoppingCart, Subscribe,
-                            Tag)
+                            Tag, TagRecipe)
 from rest_framework import serializers
 from users.models import User
 
@@ -18,6 +19,21 @@ NO_TAG_ERROR = 'There should be at least one tag.'
 TAG_IS_NOT_UNIQUE_ERROR = 'Tag must be unique.'
 COOKING_TIME_VALUE_ERROR = 'Cooking time should be an integer value.'
 COOKING_TIME_IS_NOT_POSITIVE = 'Cooking time should be a positive integer.'
+
+
+class CommonSubscribed(metaclass=serializers.SerializerMetaclass):
+    is_subscribed = serializers.SerializerMethodField()
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request.user.is_anonymous:
+            return False
+        if Subscribe.objects.filter(
+                user=request.user, follows__id=obj.id
+        ).exists():
+            return True
+        else:
+            return False
 
 
 class CommonRecipe(metaclass=serializers.SerializerMetaclass):
@@ -56,10 +72,32 @@ class CommonCount(metaclass=serializers.SerializerMetaclass):
         return Recipe.objects.filter(author__id=obj.id).count()
 
 
+class RegistrationSerializer(UserCreateSerializer, CommonSubscribed):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'password'
+        )
+        write_only_fields = ('password',)
+        read_only_fields = ('id',)
+        extra_kwargs = {'is_subscribed': {'required': False}}
+
+    def to_representation(self, obj):
+        result = super(RegistrationSerializer, self).to_representation(obj)
+        result.pop('password', None)
+        return result
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'color', 'slug')
+        fields = '__all__'
         extra_kwargs = {
             'name': {'required': False},
             'slug': {'required': False},
@@ -73,29 +111,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class UserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = (
-            'id', 'email', 'username',
-            'first_name', 'last_name', 'is_subscribed'
-        )
-
-    def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        return (
-            Subscribe.objects.filter(
-                user=user, id=obj.id
-            ).exists()
-            if not user.is_anonymous
-            else False
-        )
-
-
 class IngredientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measure_unit')
@@ -125,7 +141,7 @@ class IngredientAmountRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
 
-class FavouriteSerializer(serializers.Serializer):
+class FavoriteSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     cooking_time = serializers.IntegerField()
@@ -141,11 +157,10 @@ class ShoppingCartSerializer(serializers.Serializer):
 
 class RecipeSerializer(serializers.ModelSerializer, CommonRecipe):
     tags = TagSerializer(many=True)
-    author = UserSerializer(read_only=True)
+    author = RegistrationSerializer(read_only=True)
     ingredients = RecipeIngredientEntrySerializer(
         source='ingredient_entries', many=True
     )
-    is_in_favorites = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
@@ -165,7 +180,7 @@ class RecipeSerializer(serializers.ModelSerializer, CommonRecipe):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
-    author = UserSerializer(read_only=True)
+    author = RegistrationSerializer(read_only=True)
     image = Base64ImageField(max_length=None, use_url=False,)
     ingredients = IngredientAmountRecipeSerializer(
         source='ingredient_entries',
@@ -252,11 +267,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
     def update(self, instance, validated_data):
         tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredient_entries')
-        instance.tags.clear()
-        instance.ingredients.clear()
+        TagRecipe.objects.filter(recipe=instance).delete()
+        RecipeIngredientEntry.objects.filter(recipe=instance).delete()
         self.add_tag(tags_data, instance)
         self.add_ingredient(ingredients_data, instance)
         super().update(instance, validated_data)
+        instance.save()
         return instance
 
     class Meta:
@@ -275,7 +291,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
         )
 
 
-class UserSubscriptionSerializer(serializers.ModelSerializer, CommonCount):
+class UserSubscriptionSerializer(
+    serializers.ModelSerializer,
+    CommonSubscribed,
+    CommonCount
+):
     recipes = serializers.SerializerMethodField()
 
     class Meta:

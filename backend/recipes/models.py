@@ -1,6 +1,7 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
-from users.models import User, get_deleted_user
+User = get_user_model()
 
 
 class Tag(models.Model):
@@ -48,7 +49,7 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     author = models.ForeignKey(
         User,
-        on_delete=models.SET(get_deleted_user),
+        on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Recipe Author'
     )
@@ -63,12 +64,13 @@ class Recipe(models.Model):
     text = models.TextField(verbose_name='Recipe Text')
     ingredients = models.ManyToManyField(
         Ingredient,
-        through='recipes.RecipeIngredientEntry',
+        through='RecipeIngredientEntry',
         related_name='recipes',
         verbose_name='Recipe Ingredients'
     )
     tags = models.ManyToManyField(
         Tag,
+        through='TagRecipe',
         verbose_name='Recipe Tags'
     )
     cooking_time = models.PositiveSmallIntegerField(
@@ -116,6 +118,32 @@ class RecipeIngredientEntry(models.Model):
 
     def __str__(self):
         return f'{self.ingredient} {self.recipe}'
+
+
+class TagRecipe(models.Model):
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        verbose_name='Tag',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Recipe'
+    )
+
+    class Meta:
+        verbose_name = 'Теги рецепта'
+        verbose_name_plural = 'Теги рецепта'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tag', 'recipe'],
+                name='unique_tagrecipe'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.tag} {self.recipe}'
 
 
 class Favorite(models.Model):
