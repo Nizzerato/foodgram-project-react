@@ -119,6 +119,12 @@ class BaseFavoriteCartViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         recipe_id = int(self.kwargs['recipes_id'])
         recipe = get_object_or_404(Recipe, id=recipe_id)
+        if self.model.objects.filter(
+            user=request.user, recipe=recipe
+        ).exists():
+            self.model.objects.filter(
+                user=request.user, recipe=recipe
+            ).delete()
         self.model.objects.create(
             user=request.user, recipe=recipe
         )
