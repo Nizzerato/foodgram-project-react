@@ -175,7 +175,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
         queryset=Tag.objects.all(), many=True
     )
 
-    def validate(self, value):
+    def validate_ingredients(self, value):
         ingredients_list = []
         ingredients = value
         for ingredient in ingredients:

@@ -118,7 +118,7 @@ class ShoppingCartViewSet(BaseFavoriteCartViewSet):
     model = ShoppingCart
 
 
-class FavouriteViewSet(BaseFavoriteCartViewSet):
+class FavoriteViewSet(BaseFavoriteCartViewSet):
     serializer_class = FavouriteSerializer
     queryset = Favorite.objects.all()
     model = Favorite
