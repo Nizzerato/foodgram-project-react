@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from django.db.models import Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
@@ -122,7 +120,7 @@ class BaseFavoriteCartViewSet(viewsets.ModelViewSet):
         self.model.objects.create(
             user=request.user, recipe=recipe
         )
-        return Response(HTTPStatus.CREATED)
+        return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
         recipe_id = self.kwargs['recipes_id']
@@ -131,7 +129,7 @@ class BaseFavoriteCartViewSet(viewsets.ModelViewSet):
             self.model, user__id=user_id, recipe__id=recipe_id
         )
         object.delete()
-        return Response(HTTPStatus.NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ShoppingListViewSet(BaseFavoriteCartViewSet):
