@@ -185,13 +185,11 @@ class DownloadShoppingList(APIView):
         return response
 
     def download(self, request):
-        if request.method == 'GET':
-            result = RecipeIngredientEntry.objects.filter(
-                recipe__in_shopping_list__user=request.user
-            ).values(
-                'ingredient__name', 'ingredient__measure_unit'
-            ).order_by(
-                'ingredient__name'
-            ).annotate(ingredient_total=Sum('amount'))
-            return self.canvas_method(result)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        result = RecipeIngredientEntry.objects.filter(
+            recipe__in_shopping_list__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measure_unit'
+        ).order_by(
+            'ingredient__name'
+        ).annotate(ingredient_total=Sum('amount'))
+        return self.canvas_method(result)

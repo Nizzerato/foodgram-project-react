@@ -72,7 +72,6 @@ class RecipeIngredientEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredientEntry
         fields = ('id', 'name', 'measure_unit', 'amount')
-        read_only_fields = ('name', 'measure_unit')
 
 
 class RecipeIngredientEntryCreateSerializer(serializers.ModelSerializer):
@@ -102,7 +101,6 @@ class ShoppingListSerializer(serializers.Serializer):
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     author = UserSerializer(read_only=True)
-    image = Base64ImageField(max_length=None, use_url=False,)
     ingredients = RecipeIngredientEntrySerializer(
         source='ingredient_entries', many=True
     )
@@ -221,7 +219,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         image = validated_data.pop('image')
         tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(image=image, **validated_data)
+        cooking_time = validated_data.get('cooking_time')
+        recipe = Recipe.objects.create(
+            image=image,
+            cooking_time=cooking_time,
+            **validated_data
+        )
         self.add_tags(tags_data, recipe)
         self.add_ingredient(ingredients_data, recipe)
         return recipe
