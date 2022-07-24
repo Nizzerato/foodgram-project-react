@@ -39,7 +39,12 @@ urlpatterns = (
         'recipes/<recipes_id>/shopping_cart/',
         ShoppingListViewSet.as_view(
             {'post': 'create', 'delete': 'delete'}
-        ), name='download_shopping_cart'
+        ), name='shopping_cart'
+    ),
+    path(
+        'recipes/download_shopping_cart',
+        ShoppingListViewSet.as_view(),
+        name='download_shopping_cart'
     ),
     path('', include(router_v1.urls)),
     path('', include('djoser.urls')),
