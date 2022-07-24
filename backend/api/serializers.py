@@ -106,8 +106,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientEntrySerializer(
         source='ingredient_entries', many=True
     )
-    in_favourites = serializers.SerializerMethodField()
-    in_shopping_list = serializers.SerializerMethodField()
+    is_in_favourites = serializers.SerializerMethodField()
+    is_in_shopping_list = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -120,17 +120,17 @@ class RecipeSerializer(serializers.ModelSerializer):
             'ingredients',
             'tags',
             'cooking_time',
-            'in_favourites',
-            'in_shopping_list',
+            'is_in_favourites',
+            'is_in_shopping_list',
         )
         read_only_fields = (
             'id',
             'author',
-            'in_favourites',
-            'in_shopping_list',
+            'is_in_favourites',
+            'is_in_shopping_list',
         )
 
-    def get_in_favourites(self, obj):
+    def get_is_in_favourites(self, obj):
         user = self.context.get('request').user
         return (
             Favourite.objects.filter(
@@ -140,7 +140,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             else False
         )
 
-    def get_in_shopping_list(self, obj):
+    def get_is_in_shopping_list(self, obj):
         user = self.context.get('request').user
         return (
             ShoppingList.objects.filter(
@@ -266,7 +266,7 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         )
 
     def get_recipes(self, obj):
-        request = self.context.get('recipes')
+        request = self.context.get('request')
         if request.GET.get('recipes_limit'):
             recipes_limit = int(request.GET.get('recipes_limit'))
             queryset = Recipe.objects.filter(
