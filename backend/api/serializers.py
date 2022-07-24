@@ -245,7 +245,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
             text=text,
             cooking_time=cooking_time,
         )
-        self.add_tags(tags_data, recipe)
+        self.add_tag(tags_data, recipe)
         self.add_ingredient(ingredients, recipe)
         return recipe
 
