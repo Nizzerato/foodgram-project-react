@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import User
 
-from .filters import IngredientFilter, RecipeFilter
+from .filters import IngredientSearchFilter, RecipeFilter
 from .permissions import IsStaffOrOwnerOrReadOnly, IsStaffOrReadOnly
 from .serializers import (FavouriteSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeSerializer,
@@ -40,7 +40,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.select_related()
     permission_classes = [IsStaffOrReadOnly, ]
     serializer_class = IngredientSerializer
-    filter_backends = (rest_framework.DjangoFilterBackend, IngredientFilter)
+    filter_backends = (rest_framework.DjangoFilterBackend, IngredientSearchFilter)
     pagination_class = None
     search_fields = ['^name', ]
 
