@@ -145,14 +145,14 @@ class DownloadShoppingList(APIView):
     def get(self, request):
         shopping_cart = {}
         ingredients = ShoppingList.objects.values(
-            'ingredient_entries__ingredient__name',
-            'ingredient_entries__ingredient__measure_unit__name'
+            'recipe__ingredient_entries__ingredient__name',
+            'recipe__ingredient_entries__ingredient__measure_unit__name'
         ).annotate(total=Sum('ingredient_entries__amount'))
         for ingredient in ingredients:
             amount = ingredient['total']
-            name = ingredient['ingredient_entries__ingredient__name']
+            name = ingredient['recipe__ingredient_entries__ingredient__name']
             measure_unit = ingredient[
-                'ingredient_entries__ingredient__measure_unit__name'
+                'recipe__ingredient_entries__ingredient__measure_unit__name'
             ]
             shopping_cart[name] = {
                 'measure_unit': measure_unit,
