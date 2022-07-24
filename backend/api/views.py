@@ -12,7 +12,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-from rest_framework import status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -52,9 +52,6 @@ class SubscribeViewSet(viewsets.ModelViewSet):
     serializer_class = UserSubscriptionSerializer
     permission_classes = [IsAuthenticated, ]
 
-    def get_queryset(self):
-        return get_list_or_404(User, follows__user=self.request.user)
-
     def create(self, request, *args, **kwargs):
         user_id = self.kwargs.get('users_id')
         user = get_object_or_404(User, id=user_id)
@@ -70,6 +67,20 @@ class SubscribeViewSet(viewsets.ModelViewSet):
             user=request.user, follows=user
         ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ListFollowViewSet(generics.ListAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated, ]
+    serializer_class = UserSubscriptionSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request, 'user': self.request.user})
+        return context
+
+    def get_queryset(self):
+        return self.request.user.follows.prefetch_related()
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
