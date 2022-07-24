@@ -72,7 +72,7 @@ class CommonCount(metaclass=serializers.SerializerMetaclass):
         return Recipe.objects.filter(author__id=obj.id).count()
 
 
-class UserSerializer(UserCreateSerializer, CommonSubscribed):
+class RegistrationSerializer(UserCreateSerializer, CommonSubscribed):
     class Meta:
         model = User
         fields = (
@@ -89,7 +89,7 @@ class UserSerializer(UserCreateSerializer, CommonSubscribed):
         extra_kwargs = {'is_subscribed': {'required': False}}
 
     def to_representation(self, obj):
-        result = super(UserSerializer, self).to_representation(obj)
+        result = super(RegistrationSerializer, self).to_representation(obj)
         result.pop('password', None)
         return result
 
@@ -157,7 +157,7 @@ class ShoppingCartSerializer(serializers.Serializer):
 
 class RecipeSerializer(serializers.ModelSerializer, CommonRecipe):
     tags = TagSerializer(many=True)
-    author = UserSerializer(read_only=True)
+    author = RegistrationSerializer(read_only=True)
     ingredients = RecipeIngredientEntrySerializer(
         source='ingredient_entries', many=True
     )
@@ -180,7 +180,7 @@ class RecipeSerializer(serializers.ModelSerializer, CommonRecipe):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
-    author = UserSerializer(read_only=True)
+    author = RegistrationSerializer(read_only=True)
     image = Base64ImageField(max_length=None, use_url=False,)
     ingredients = IngredientAmountRecipeSerializer(
         source='ingredient_entries',
