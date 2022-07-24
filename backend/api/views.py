@@ -1,4 +1,4 @@
-from django.db.models import Exists, OuterRef, Sum, Value
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
@@ -31,7 +31,6 @@ RECIPE_NOT_IN_LIST_ERROR = 'This recipe is not yet added.'
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    permission_classes = [IsStaffOrReadOnly, ]
     serializer_class = TagSerializer
     pagination_class = None
 
