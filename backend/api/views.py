@@ -3,8 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from django_filters import rest_framework
-from recipes.models import (Favourite, Ingredient, Recipe,
-                            RecipeIngredientEntry, ShoppingList, Subscribe,
+from recipes.models import (Favorite, Ingredient, Recipe,
+                            RecipeIngredientEntry, ShoppingCart, Subscribe,
                             Tag)
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
@@ -20,7 +20,7 @@ from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsStaffOrOwnerOrReadOnly, IsStaffOrReadOnly
 from .serializers import (FavouriteSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeSerializer,
-                          ShoppingListSerializer, TagSerializer,
+                          ShoppingCartSerializer, TagSerializer,
                           UserSubscriptionSerializer)
 
 ALREADY_SUBSCRIBED_ERROR = 'You are already subscribed to this author.'
@@ -40,9 +40,9 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.select_related()
     permission_classes = [IsStaffOrReadOnly, ]
     serializer_class = IngredientSerializer
-    filter_backends = (rest_framework.DjangoFilterBackend,)
-    filterset_class = IngredientFilter
+    filter_backends = (rest_framework.DjangoFilterBackend, IngredientFilter)
     pagination_class = None
+    search_fields = ['^name', ]
 
 
 class SubscribeViewSet(viewsets.ModelViewSet):
@@ -58,10 +58,10 @@ class SubscribeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        user_id = self.kwargs.get('users_id')
-        user = get_object_or_404(User, id=user_id)
+        author_id = self.kwargs['users_id']
+        user_id = request.user.id
         Subscribe.objects.filter(
-            user=request.user, follows=user
+            user__id=user_id, follows__id=author_id
         ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -74,33 +74,23 @@ class ListFollowViewSet(generics.ListAPIView):
         return get_list_or_404(User, follows__user=self.request.user)
 
 
-class ListRecipesInCartViewSet(generics.ListAPIView):
-    permission_classes = [IsAuthenticated, IsStaffOrOwnerOrReadOnly]
-    serializer_class = ShoppingListSerializer
-
-    def get_queryset(self):
-        return get_list_or_404(
-            ShoppingList, in_shopping_list__recipe=self.request.user
-        )
-
-
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.prefetch_related()
     permission_classes = [IsStaffOrOwnerOrReadOnly, ]
+    filter_class = RecipeFilter
     filter_backends = (rest_framework.DjangoFilterBackend,)
-    filterset_class = RecipeFilter
     http_method_names = ('get', 'post', 'delete', 'put', 'patch')
 
     def get_queryset(self):
         user = self.request.user
         return Recipe.objects.prefetch_related().annotate(
-            is_in_favourites=(
-                Exists(Favourite.objects.filter(id=OuterRef('id')))
+            is_in_favorites=(
+                Exists(Favorite.objects.filter(id=OuterRef('id')))
                 if user.is_authenticated
                 else Value(False)
             ),
-            is_in_shopping_list=(
-                Exists(ShoppingList.objects.filter(id=OuterRef('id')))
+            is_in_shopping_cart=(
+                Exists(ShoppingCart.objects.filter(id=OuterRef('id')))
                 if user.is_authenticated
                 else Value(False)
             ),
@@ -121,12 +111,6 @@ class BaseFavoriteCartViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         recipe_id = int(self.kwargs['recipes_id'])
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        if self.model.objects.filter(
-            user=request.user, recipe=recipe
-        ).exists():
-            self.model.objects.filter(
-                user=request.user, recipe=recipe
-            ).delete()
         self.model.objects.create(
             user=request.user, recipe=recipe
         )
@@ -142,16 +126,16 @@ class BaseFavoriteCartViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ShoppingListViewSet(BaseFavoriteCartViewSet):
-    serializer_class = ShoppingListSerializer
-    queryset = ShoppingList.objects.all()
-    model = ShoppingList
+class ShoppingCartViewSet(BaseFavoriteCartViewSet):
+    serializer_class = ShoppingCartSerializer
+    queryset = ShoppingCart.objects.all()
+    model = ShoppingCart
 
 
 class FavouriteViewSet(BaseFavoriteCartViewSet):
     serializer_class = FavouriteSerializer
-    queryset = Favourite.objects.all()
-    model = Favourite
+    queryset = Favorite.objects.all()
+    model = Favorite
 
 
 class DownloadShoppingList(APIView):

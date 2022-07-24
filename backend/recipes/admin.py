@@ -1,16 +1,11 @@
 from django.contrib import admin
 
-from .models import Ingredient, MeasureUnit, Recipe, RecipeIngredientEntry, Tag
+from .models import Ingredient, Recipe, RecipeIngredientEntry, Tag
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
-
-
-@admin.register(MeasureUnit)
-class MeasureUnitAdmin(admin.ModelAdmin):
-    pass
 
 
 @admin.register(Ingredient)
@@ -32,7 +27,7 @@ class RecipeIngredientEntryInLine(admin.TabularInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     fields = (
-        ('author', 'favourites_entries'),
+        'author',
         'name',
         'tags',
         'image',
@@ -40,6 +35,5 @@ class RecipeAdmin(admin.ModelAdmin):
         'cooking_time',
     )
     inlines = (RecipeIngredientEntryInLine,)
-    readonly_fields = ('favourites_entries',)
     list_display = ('name', 'author')
     list_filter = ('author__username', 'name', 'tags')

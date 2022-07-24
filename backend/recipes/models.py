@@ -12,7 +12,10 @@ class Tag(models.Model):
         max_length=200,
         verbose_name='Tag Color'
     )
-    slug = models.SlugField(verbose_name='Tag Slug')
+    slug = models.SlugField(
+        unique=True,
+        verbose_name='Tag Slug'
+    )
 
     class Meta:
         ordering = ('id',)
@@ -23,29 +26,13 @@ class Tag(models.Model):
         return self.name
 
 
-class MeasureUnit(models.Model):
-    name = models.CharField(
-        max_length=10,
-        verbose_name='Measure Unit Name'
-    )
-
-    class Meta:
-        ordering = ('id',)
-        verbose_name = 'Measure Unit'
-        verbose_name_plural = 'Measure Units'
-
-    def __str__(self):
-        return self.name
-
-
 class Ingredient(models.Model):
     name = models.CharField(
         max_length=100,
         verbose_name='Ingredient Name'
     )
-    measure_unit = models.ForeignKey(
-        MeasureUnit,
-        on_delete=models.RESTRICT,
+    measure_unit = models.CharField(
+        max_length=30,
         verbose_name='Ingredient Measure Unit'
     )
 
@@ -53,7 +40,6 @@ class Ingredient(models.Model):
         ordering = ('name',)
         verbose_name = 'Ingredient'
         verbose_name_plural = 'Ingredients'
-        unique_together = ('name', 'measure_unit')
 
     def __str__(self):
         return self.name
@@ -70,11 +56,15 @@ class Recipe(models.Model):
         max_length=200,
         verbose_name='Recipe Name'
     )
-    image = models.ImageField(verbose_name='Recipe Image')
+    image = models.ImageField(
+        upload_to='recipes/',
+        verbose_name='Recipe Image'
+    )
     text = models.TextField(verbose_name='Recipe Text')
     ingredients = models.ManyToManyField(
         Ingredient,
         through='recipes.RecipeIngredientEntry',
+        related_name='recipes',
         verbose_name='Recipe Ingredients'
     )
     tags = models.ManyToManyField(
@@ -97,15 +87,11 @@ class Recipe(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def favourites_entries(self):
-        return self.in_favourites.count()
-
 
 class RecipeIngredientEntry(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         related_name='ingredient_entries',
         verbose_name='Ingredient'
     )
@@ -132,7 +118,7 @@ class RecipeIngredientEntry(models.Model):
         return f'{self.ingredient} {self.recipe}'
 
 
-class Favourite(models.Model):
+class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -141,17 +127,17 @@ class Favourite(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='in_favourites',
+        related_name='favorites',
         verbose_name='Recipe'
     )
 
     class Meta:
-        verbose_name = 'Favourite'
-        verbose_name_plural = 'Favourites'
+        verbose_name = 'Favorite'
+        verbose_name_plural = 'Favorites'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='unique_favourite'
+                name='unique_favorite'
             )
         ]
 
@@ -159,7 +145,7 @@ class Favourite(models.Model):
         return f'{self.recipe} {self.user}'
 
 
-class ShoppingList(models.Model):
+class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -168,17 +154,17 @@ class ShoppingList(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='in_shopping_list',
+        related_name='shopping_cart',
         verbose_name='Recipes'
     )
 
     class Meta:
-        verbose_name = 'Shopping List'
-        verbose_name_plural = 'Shopping Lists'
+        verbose_name = 'Shopping Cart'
+        verbose_name_plural = 'Shopping Carts'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='unique_shopping_list'
+                name='unique_shopping_cart'
             )
         ]
 

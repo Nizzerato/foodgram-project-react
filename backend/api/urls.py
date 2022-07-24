@@ -3,8 +3,8 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (DownloadShoppingList, FavouriteViewSet, IngredientViewSet,
-                    ListFollowViewSet, ListRecipesInCartViewSet, RecipeViewSet,
-                    ShoppingListViewSet, SubscribeViewSet, TagViewSet)
+                    ListFollowViewSet, RecipeViewSet, ShoppingCartViewSet,
+                    SubscribeViewSet, TagViewSet)
 
 router_v1 = DefaultRouter()
 router_v1.register(
@@ -12,7 +12,6 @@ router_v1.register(
 )
 router_v1.register(r'recipes', RecipeViewSet, basename='recipes')
 router_v1.register(r'tags', TagViewSet, basename='tags')
-router_v1.register(r'cart', ListRecipesInCartViewSet, basename='cart')
 
 
 urlpatterns = (
@@ -38,7 +37,7 @@ urlpatterns = (
     ),
     path(
         'recipes/<recipes_id>/shopping_cart/',
-        ShoppingListViewSet.as_view(
+        ShoppingCartViewSet.as_view(
             {'post': 'create', 'delete': 'delete'}
         ), name='shopping_cart'
     ),
