@@ -124,7 +124,7 @@ class FavouriteViewSet(BaseFavoriteCartViewSet):
     model = Favorite
 
 
-class DownloadShoppingList(APIView):
+class DownloadShoppingCart(APIView):
     permission_classes = [IsAuthenticated, ]
 
     @staticmethod
@@ -162,7 +162,7 @@ class DownloadShoppingList(APIView):
 
     def get(self, request):
         result = RecipeIngredientEntry.objects.filter(
-            recipe__in_shopping_list__user=request.user
+            recipe__in_shopping_cart__user=request.user
         ).values(
             'ingredient__name', 'ingredient__measure_unit'
         ).order_by(
