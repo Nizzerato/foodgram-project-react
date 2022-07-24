@@ -1,6 +1,4 @@
-"""The script for database filling by ingredients."""
-
-import json
+import csv
 
 from django.core.management.base import BaseCommand
 
@@ -8,25 +6,28 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
-    """Working with the database."""
 
-    help = 'Uploading Ingredients data-set'
+    def add_arguments(self, parser):
+        parser.add_argument('file_path', type=str)
 
     def handle(self, *args, **options):
-        """Handle the file which has data."""
-        with open(
-                'data/ingredients.json', encoding='utf-8'
-        ) as json_file:
-            ingredients = json.load(json_file)
-            for ingredient in ingredients:
-                name = ingredient['name']
-                measure_unit = ingredient['measurement_unit']
-                Ingredient.objects.create(
-                    name=name,
-                    measure_unit=measure_unit
-                )
+        file_path = options['file_path']
+        ingredients = []
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file, delimiter=',')
+            for entry in reader:
+                measure_unit = Ingredient(measure_unit=entry[1])[0]
+                ingredient = Ingredient(name=entry[0], measure_unit=measure_unit)
+                ingredients.append(ingredient)
+                self.stdout.write(f"Entry {entry[0]}, {entry[1]} was parsed")
 
+                if len(ingredients) > 999:
+                    Ingredient.objects.bulk_create(ingredients)
+                    self.stdout.write(f"{len(ingredients)} entries were bulk created")
+                    ingredients = []
 
-app = Command()
-app.handle()
-print("Ингредиенты загружены в базу!")
+        if ingredients:
+            Ingredient.objects.bulk_create(ingredients)
+            self.stdout.write(f"{len(ingredients)} entries were bulk created")
+
+        self.stdout.write("Process finished")
