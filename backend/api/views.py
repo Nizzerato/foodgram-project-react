@@ -21,8 +21,8 @@ from .filters import IngredientSearchFilter, RecipeFilter
 from .permissions import IsStaffOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeSerializer,
-                          UserSerializer, ShoppingCartSerializer,
-                          TagSerializer, UserSubscriptionSerializer)
+                          ShoppingCartSerializer, TagSerializer,
+                          UserSerializer, UserSubscriptionSerializer)
 
 ALREADY_SUBSCRIBED_ERROR = 'You are already subscribed to this author.'
 NO_SUBSCRIPTION_ERROR = 'You are not subscribed to this author.'
