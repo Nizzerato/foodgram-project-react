@@ -1,7 +1,6 @@
 from django.db.models import Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
-from django.views.decorators.http import require_http_methods
 
 from django_filters import rest_framework
 from recipes.models import (Favourite, Ingredient, Recipe,
@@ -183,7 +182,6 @@ class DownloadShoppingList(APIView):
         sheet.save()
         return response
 
-    @require_http_methods(["GET"])
     def get(self, request):
         result = RecipeIngredientEntry.objects.filter(
             recipe__in_shopping_list__user=request.user
