@@ -12,6 +12,7 @@ router_v1.register(
 )
 router_v1.register(r'recipes', RecipeViewSet, basename='recipes')
 router_v1.register(r'tags', TagViewSet, basename='tags')
+router_v1.register(r'cart', ListRecipesInCartViewSet, basename='cart')
 
 
 urlpatterns = (
@@ -28,11 +29,6 @@ urlpatterns = (
         'recipes/download_shopping_cart/',
         DownloadShoppingList.as_view(),
         name='download',
-    ),
-    path(
-        'cart/',
-        ListRecipesInCartViewSet.as_view(),
-        name='cart',
     ),
     path(
         'recipes/<recipes_id>/favorite/',
