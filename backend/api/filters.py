@@ -1,32 +1,16 @@
-from django import forms
-
 from django_filters import rest_framework
-from recipes.models import Ingredient, Recipe
+from recipes.models import Recipe
+from rest_framework import filters
 from users.models import User
 
 
-class IngredientFilter(rest_framework.FilterSet):
-    name = rest_framework.CharFilter(
-        field_name='name', lookup_expr='istartswith'
-    )
-
-    class Meta:
-        model = Ingredient
-        fields = ('name',)
-
-
-class NonValidatingMultipleChoiceField(forms.MultipleChoiceField):
-    def validate(self, value):
-        pass
-
-
-class MultipleFieldFilter(rest_framework.AllValuesMultipleFilter):
-    field_class = NonValidatingMultipleChoiceField
+class IngredientSearchFilter(filters.SearchFilter):
+    search_param = 'name'
 
 
 class RecipeFilter(rest_framework.FilterSet):
     author = rest_framework.ModelChoiceFilter(queryset=User.objects.all())
-    tags = MultipleFieldFilter(field_name='tags__slug')
+    tags = rest_framework.AllValuesMultipleFilter(field_name='tags__slug')
     is_in_favorites = rest_framework.BooleanFilter(
         method='get_is_in_favorites'
     )
