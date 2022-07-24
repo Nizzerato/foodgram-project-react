@@ -74,6 +74,16 @@ class ListFollowViewSet(generics.ListAPIView):
         return get_list_or_404(User, follows__user=self.request.user)
 
 
+class ListRecipesInCartViewSet(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsStaffOrOwnerOrReadOnly]
+    serializer_class = ShoppingListSerializer
+
+    def get_queryset(self):
+        return get_list_or_404(
+            ShoppingList, in_shopping_list__recipe=self.request.user
+        )
+
+
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.prefetch_related()
     permission_classes = [IsStaffOrOwnerOrReadOnly, ]
