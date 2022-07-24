@@ -106,6 +106,7 @@ class RecipeIngredientEntry(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.RESTRICT,
+        related_name='ingredient_entries',
         verbose_name='Ingredient'
     )
     recipe = models.ForeignKey(
