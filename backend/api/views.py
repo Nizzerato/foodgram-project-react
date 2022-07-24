@@ -162,7 +162,7 @@ class DownloadShoppingCart(APIView):
 
     def get(self, request):
         result = RecipeIngredientEntry.objects.filter(
-            recipe__in_shopping_cart__user=request.user
+            recipe__shopping_cart__user=request.user
         ).values(
             'ingredient__name', 'ingredient__measure_unit'
         ).order_by(

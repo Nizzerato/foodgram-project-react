@@ -145,6 +145,7 @@ class RecipeSerializer(serializers.ModelSerializer, CommonRecipe):
     ingredients = RecipeIngredientEntrySerializer(
         source='ingredient_entries', many=True
     )
+    is_in_favorites = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
