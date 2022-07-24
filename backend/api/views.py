@@ -148,7 +148,6 @@ class FavouriteViewSet(BaseFavoriteCartViewSet):
 
 class DownloadShoppingList(APIView):
     permission_classes = [IsAuthenticated, ]
-    http_method_names = ('get', )
 
     @staticmethod
     def canvas_method(dictionary):
