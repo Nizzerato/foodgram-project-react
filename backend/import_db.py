@@ -8,7 +8,9 @@ from recipes.models import Ingredient
 class Command(BaseCommand):
     def handle(self, *args, **options):
         ingredients = []
-        with open('data/ingredients.json', 'r', newline='', encoding='utf-8') as file:
+        with open(
+            'data/ingredients.json', 'r', newline='', encoding='utf-8'
+        ) as file:
             reader = csv.reader(file, delimiter=',')
             for entry in reader:
                 measure_unit = Ingredient(measure_unit=entry[1])[0]
