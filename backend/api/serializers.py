@@ -1,15 +1,9 @@
 from djoser.serializers import UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
+from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
+                            Recipe, Subscribe, Tag, TagRecipe)
 from rest_framework import serializers
 from users.models import User
-from recipes.models import Cart
-from recipes.models import Favorite
-from recipes.models import Ingredient
-from recipes.models import IngredientRecipe
-from recipes.models import Recipe
-from recipes.models import Subscribe
-from recipes.models import Tag
-from recipes.models import TagRecipe
 
 
 class CommonSubscribed(metaclass=serializers.SerializerMetaclass):
@@ -256,8 +250,7 @@ class RecipeSerializerPost(serializers.ModelSerializer,
             text=text,
             cooking_time=cooking_time,
         )
-        recipe = self.add_tags_and_ingredients(tags_data, ingredients, recipe)
-        return recipe
+        return self.add_tags_and_ingredients(tags_data, ingredients, recipe)
 
     def update(self, instance, validated_data):
         """Update recipes."""

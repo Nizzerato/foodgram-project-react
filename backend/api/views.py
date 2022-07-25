@@ -3,33 +3,24 @@ from http import HTTPStatus
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from recipes.models import (Cart, Favorite, Ingredient, IngredientRecipe,
+                            Recipe, Subscribe, Tag)
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
-
-from recipes.models import Cart
-from recipes.models import Favorite
-from recipes.models import Ingredient
-from recipes.models import IngredientRecipe
-from recipes.models import Recipe
-from recipes.models import Subscribe
-from recipes.models import Tag
 from users.models import User
-from .filters import IngredientSearchFilter
-from .filters import RecipeFilters
-from .serializers import CartSerializer
-from .serializers import FavoriteSerializer
-from .serializers import IngredientSerializer
-from .serializers import RecipeSerializer
-from .serializers import RecipeSerializerPost
-from .serializers import RegistrationSerializer
-from .serializers import SubscriptionSerializer
-from .serializers import TagSerializer
+
+from .filters import IngredientSearchFilter, RecipeFilters
+from .serializers import (CartSerializer, FavoriteSerializer,
+                          IngredientSerializer, RecipeSerializer,
+                          RecipeSerializerPost, RegistrationSerializer,
+                          SubscriptionSerializer, TagSerializer)
 
 
 class CreateUserView(UserViewSet):
@@ -158,8 +149,8 @@ class DownloadCart(viewsets.ModelViewSet):
         """Save the shopping list in format pdf."""
         response = HttpResponse(content_type='application/pdf')
         response[
-            'Content-Disposition'] = 'attachment; \
-        filename = "shopping_cart.pdf"'
+            'Content-Disposition'
+        ] = 'attachment; filename = "shopping_cart.pdf"'
         begin_position_x, begin_position_y = 40, 650
         sheet = canvas.Canvas(response, pagesize=A4)
         pdfmetrics.registerFont(TTFont('List',

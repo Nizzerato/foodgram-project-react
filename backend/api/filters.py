@@ -1,6 +1,6 @@
 from django_filters import rest_framework as django_filter
-from rest_framework import filters
 from recipes.models import Recipe
+from rest_framework import filters
 from users.models import User
 
 
@@ -37,4 +37,3 @@ class IngredientSearchFilter(filters.SearchFilter):
     """Setting up filter of the search ingredient model."""
 
     search_param = 'name'
-
