@@ -6,14 +6,9 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
-
-    def add_arguments(self, parser):
-        parser.add_argument('file_path', type=str)
-
     def handle(self, *args, **options):
-        file_path = options['file_path']
         ingredients = []
-        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        with open('data/ingredients.json', 'r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file, delimiter=',')
             for entry in reader:
                 measure_unit = Ingredient(measure_unit=entry[1])[0]
