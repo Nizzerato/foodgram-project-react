@@ -238,7 +238,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
         objs = [
             RecipeIngredientEntry(
                 recipe=recipe,
-                ingredient=ingredient['id'],
+                ingredient_id=ingredient['ingredient']['id'],
                 amount=ingredient['amount']
             )
             for ingredient in ingredients
