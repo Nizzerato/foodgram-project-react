@@ -29,10 +29,6 @@ class CommonSubscribed(metaclass=serializers.SerializerMetaclass):
 class CommonRecipe(metaclass=serializers.SerializerMetaclass):
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
-
-    def get_image(self, obj):
-        return obj.image.url
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -151,6 +147,7 @@ class RecipeSerializer(
         source='ingredientrecipes',
         many=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -167,6 +164,9 @@ class RecipeSerializer(
             'is_favorited'
         )
 
+    def get_image(self, obj):
+        return obj.image.url
+
 
 class RecipeSerializerPost(
     serializers.ModelSerializer,
@@ -180,6 +180,7 @@ class RecipeSerializerPost(
     ingredients = IngredientAmountRecipeSerializer(
         source='ingredientrecipes', many=True
     )
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
