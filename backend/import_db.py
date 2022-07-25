@@ -6,14 +6,10 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
-    """Working with the database."""
-
-    help = 'Uploading Ingredients data-set'
 
     def handle(self, *args, **options):
-        """Handle the file which has data."""
         with open(
-                'data/ingredients.json', encoding='utf-8'
+            'data/ingredients.json', encoding='utf-8'
         ) as json_file:
             ingredients = json.load(json_file)
             for ingredient in ingredients:
@@ -27,4 +23,4 @@ class Command(BaseCommand):
 
 app = Command()
 app.handle()
-print("Ингредиенты загружены в базу!")
+print('Ingredients successfully uploaded')
