@@ -1,33 +1,29 @@
-import csv
-
-from django.core.management.base import BaseCommand
+import json
 
 from recipes.models import Ingredient
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
+    """Working with the database."""
+
+    help = 'Uploading Ingredients data-set'
+
     def handle(self, *args, **options):
-        ingredients = []
+        """Handle the file which has data."""
         with open(
-            'data/ingredients.json', 'r', newline='', encoding='utf-8'
-        ) as file:
-            reader = csv.reader(file, delimiter=',')
-            for entry in reader:
-                ingredient = Ingredient.objects.get_or_create(
-                    name=entry[0], measure_unit=entry[1]
+                'data/ingredients.json', encoding='utf-8'
+        ) as json_file:
+            ingredients = json.load(json_file)
+            for ingredient in ingredients:
+                name = ingredient['name']
+                measurement_unit = ingredient['measurement_unit']
+                Ingredient.objects.create(
+                    name=name,
+                    measurement_unit=measurement_unit
                 )
-                ingredients.append(ingredient)
-                self.stdout.write(f"Entry {entry[0]}, {entry[1]} was parsed")
 
-                if len(ingredients) > 999:
-                    Ingredient.objects.bulk_create(ingredients)
-                    self.stdout.write(
-                        f"{len(ingredients)} entries were bulk created"
-                    )
-                    ingredients = []
 
-        if ingredients:
-            Ingredient.objects.bulk_create(ingredients)
-            self.stdout.write(f"{len(ingredients)} entries were bulk created")
-
-        self.stdout.write("Process finished")
+app = Command()
+app.handle()
+print("Ингредиенты загружены в базу!")

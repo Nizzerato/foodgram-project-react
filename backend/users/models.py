@@ -3,40 +3,35 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """Creating own model of user."""
+
     username = models.CharField(
         db_index=True,
         max_length=150,
         unique=True,
-        verbose_name='Username'
-    )
+        verbose_name='Уникальное имя',
+        help_text='Введите уникальное имя пользователя')
     email = models.EmailField(
         db_index=True,
-        max_length=254,
-        blank=False,
         unique=True,
-        verbose_name='User Email'
-    )
+        max_length=254,
+        verbose_name='Электронная почта',
+        help_text='Введите электронную почту пользователя')
     first_name = models.CharField(
         max_length=150,
-        verbose_name='Name'
-    )
+        verbose_name='Имя',
+        help_text='Введите имя пользователя')
     last_name = models.CharField(
         max_length=150,
-        verbose_name='Last Name'
-    )
+        verbose_name='Фамилия',
+        help_text='Введите фамилию пользователя')
     is_subscribed = models.BooleanField(
         default=False,
-        verbose_name='Subscription'
-    )
-
-    class Meta:
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
+        verbose_name='Подписка на данного пользователя',
+        help_text='Отметьте для подписки на данного пользователя')
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
 
     def __str__(self):
+        """Represent the model by a string."""
         return self.username
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = (
-        'username', 'password', 'first_name', 'last_name'
-    )
