@@ -17,14 +17,13 @@ class CommonSubscribed(metaclass=serializers.SerializerMetaclass):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if request.user.is_anonymous:
-            return False
-        if Subscribe.objects.filter(
-            user=request.user, following__id=obj.id
-        ).exists():
-            return True
-        else:
-            return False
+        return (
+            Subscribe.objects.filter(
+                user=request.user, following__id=obj.id
+            ).exists()
+            if not request.user.is_anonymous
+            else False
+        )
 
 
 class CommonRecipe(metaclass=serializers.SerializerMetaclass):
@@ -33,27 +32,25 @@ class CommonRecipe(metaclass=serializers.SerializerMetaclass):
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        if request.user.is_anonymous:
-            return False
-        if Favorite.objects.filter(
-            user=request.user,
-            recipe__id=obj.id
-        ).exists():
-            return True
-        else:
-            return False
+        return (
+            Favorite.objects.filter(
+                user=request.user,
+                recipe__id=obj.id
+            ).exists()
+            if not request.user.is_anonymous
+            else False
+        )
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        if request.user.is_anonymous:
-            return False
-        if Cart.objects.filter(
-            user=request.user,
-            recipe__id=obj.id
-        ).exists():
-            return True
-        else:
-            return False
+        return (
+            Cart.objects.filter(
+                user=request.user,
+                recipe__id=obj.id
+            ).exists()
+            if not request.user.is_anonymous
+            else False
+        )
 
 
 class CommonCount(metaclass=serializers.SerializerMetaclass):

@@ -34,8 +34,6 @@ class SubscribeViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        return get_list_or_404(User, following__user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         user_id = self.kwargs.get('users_id')
@@ -51,6 +49,11 @@ class SubscribeViewSet(viewsets.ModelViewSet):
             Subscribe, user__id=user_id, following__id=author_id)
         subscribe.delete()
         return Response(HTTPStatus.NO_CONTENT)
+
+
+class ListFollowViewSet(viewsets.ModelViewSet):
+    def get_queryset(self):
+        return get_list_or_404(User, following__user=self.request.user)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
