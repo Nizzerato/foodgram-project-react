@@ -60,10 +60,7 @@ docker-compose exec -ti container_name python manage.py createsuperuser
 - Выполните команду:
 
 ```
-docker-compose exec backend bash
-```
-```
-python manage.py shell < import_db.py
+docker-compose exec backend python manage.py import_db
 ```
 
 ## Пример наполнения .env-файла:
