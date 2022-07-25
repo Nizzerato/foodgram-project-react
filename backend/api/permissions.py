@@ -1,12 +1,9 @@
 from rest_framework import permissions
 
 
-class IsAdmin(permissions.BasePermission):
-    """Creating permissions of administrator."""
-
+class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        """Enable permission of users."""
-        if request.user.is_authenticated and request.user.is_admin:
-            return True
-        else:
-            return False
+        return (
+            request.method in permissions.SAFE_METHODS
+            or request.user.is_staff
+        )

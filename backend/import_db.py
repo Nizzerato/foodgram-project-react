@@ -16,9 +16,9 @@ class Command(BaseCommand):
         with open(file_path, 'r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file, delimiter=',')
             for entry in reader:
-                measurement_unit = Ingredient(measurement_unit=entry[1])[0]
+                measure_unit = Ingredient(measure_unit=entry[1])[0]
                 ingredient = Ingredient(
-                    name=entry[0], measurement_unit=measurement_unit
+                    name=entry[0], measure_unit=measure_unit
                 )
                 ingredients.append(ingredient)
                 self.stdout.write(f"Entry {entry[0]}, {entry[1]} was parsed")
