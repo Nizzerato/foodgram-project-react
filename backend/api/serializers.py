@@ -180,7 +180,6 @@ class RecipeSerializerPost(
     ingredients = IngredientAmountRecipeSerializer(
         source='ingredientrecipes', many=True
     )
-    image = Base64ImageField()
 
     class Meta:
         model = Recipe
