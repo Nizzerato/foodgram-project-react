@@ -51,6 +51,9 @@ class SubscribeViewSet(viewsets.ModelViewSet):
 
 
 class ListFollowViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    serializer_class = SubscriptionSerializer
+
     def get_queryset(self):
         return get_list_or_404(User, following__user=self.request.user)
 
