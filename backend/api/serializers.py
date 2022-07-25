@@ -190,6 +190,21 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
         queryset=Tag.objects.all(), many=True
     )
 
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'author',
+            'name',
+            'image',
+            'text',
+            'ingredients',
+            'tags',
+            'cooking_time',
+            'is_in_favorites',
+            'is_in_shopping_cart'
+        )
+
     def validate_ingredients(self, value):
         ingredients_list = []
         ingredients = value
@@ -274,21 +289,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer, CommonRecipe):
         super().update(instance, validated_data)
         instance.save()
         return instance
-
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'author',
-            'name',
-            'image',
-            'text',
-            'ingredients',
-            'tags',
-            'cooking_time',
-            'is_in_favorites',
-            'is_in_shopping_cart'
-        )
 
 
 class UserSubscriptionSerializer(
