@@ -127,14 +127,14 @@ class FavoriteSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     cooking_time = serializers.IntegerField()
-    image = Base64ImageField(max_length=None, use_url=True,)
+    image = Base64ImageField()
 
 
 class CartSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     cooking_time = serializers.IntegerField()
-    image = Base64ImageField(max_length=None, use_url=True,)
+    image = Base64ImageField()
 
 
 class RecipeSerializer(
@@ -147,7 +147,7 @@ class RecipeSerializer(
         source='ingredientrecipes',
         many=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = Base64ImageField(max_length=None, use_url=True,)
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -177,7 +177,7 @@ class RecipeSerializerPost(
     ingredients = IngredientAmountRecipeSerializer(
         source='ingredientrecipes', many=True
     )
-    image = Base64ImageField(max_length=None, use_url=True,)
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
