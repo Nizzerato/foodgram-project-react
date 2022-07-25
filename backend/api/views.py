@@ -21,8 +21,8 @@ from .filters import IngredientSearchFilter, RecipeFilter
 from .permissions import IsStaffOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeSerializer,
-                          ShoppingCartSerializer, TagSerializer,
-                          UserSerializer, UserSubscriptionSerializer)
+                          RegistrationSerializer, ShoppingCartSerializer,
+                          TagSerializer, UserSubscriptionSerializer)
 
 ALREADY_SUBSCRIBED_ERROR = 'You are already subscribed to this author.'
 NO_SUBSCRIPTION_ERROR = 'You are not subscribed to this author.'
@@ -31,7 +31,7 @@ RECIPE_NOT_IN_LIST_ERROR = 'This recipe is not yet added.'
 
 
 class CreateUserView(UserViewSet):
-    serializer_class = UserSerializer
+    serializer_class = RegistrationSerializer
 
     def get_queryset(self):
         return User.objects.all()
