@@ -13,7 +13,7 @@ class Command(BaseCommand):
         ) as file:
             reader = csv.reader(file, delimiter=',')
             for entry in reader:
-                measure_unit = Ingredient(measure_unit=entry[1])[0]
+                measure_unit = Ingredient.objects.get_or_create(measure_unit=entry[1])[0]
                 ingredient = Ingredient(
                     name=entry[0], measure_unit=measure_unit
                 )
