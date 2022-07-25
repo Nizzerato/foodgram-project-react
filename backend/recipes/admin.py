@@ -60,7 +60,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 class SubscribeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'following')
+    list_display = ('user', 'follows')
     search_fields = ('user', )
     empty_value_display = '-empty-'
     list_filter = ('user',)
